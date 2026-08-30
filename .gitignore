@@ -23,7 +23,9 @@ desktop.ini
 .vscode/
 .idea/
 *.swp
-*~
+# 注意：这里**不能**写 `*~`。Unity 用结尾的 ~ 表示「不导入这个目录」
+# （例如 Packages/com.arongranberg.astar/ExampleScenes~/），`*~` 会把
+# 这类目录连同里面几千个已入库的文件一起吞掉。
 
 # ---- AI 助手与工具的本地缓存 ----
 .claude/
