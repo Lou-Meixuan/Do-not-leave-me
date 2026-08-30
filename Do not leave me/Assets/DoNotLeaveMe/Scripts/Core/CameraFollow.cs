@@ -171,6 +171,9 @@ public class CameraFollow : MonoBehaviour
     private Transform hintTarget;
     private bool suppressMouse = false;
     private Coroutine hintRoutine;
+    private int scriptedControlOwners;
+    private Transform scriptedPose;
+    private float scriptedBlendSpeed = 8f;
 
     #endregion
 
@@ -193,6 +196,14 @@ public class CameraFollow : MonoBehaviour
 
     void LateUpdate()
     {
+        if (scriptedControlOwners > 0 && scriptedPose != null)
+        {
+            float blend = 1f - Mathf.Exp(-Mathf.Max(0.01f, scriptedBlendSpeed) * Time.unscaledDeltaTime);
+            transform.position = Vector3.Lerp(transform.position, scriptedPose.position, blend);
+            transform.rotation = Quaternion.Slerp(transform.rotation, scriptedPose.rotation, blend);
+            return;
+        }
+
         if (target == null) return;
 
         // 暂停时（菜单打开）完全冻结镜头：不响应鼠标、不跟随。
@@ -624,6 +635,44 @@ public class CameraFollow : MonoBehaviour
     {
         if (hintRoutine != null) StopCoroutine(hintRoutine);
         EndHintState();
+    }
+
+    public void AcquireScriptedControl(Transform pose, float blendSpeed = 8f)
+    {
+        if (pose == null)
+            return;
+        scriptedControlOwners++;
+        scriptedPose = pose;
+        scriptedBlendSpeed = Mathf.Max(0.01f, blendSpeed);
+        suppressMouse = true;
+    }
+
+    public void SetScriptedPose(Transform pose)
+    {
+        if (scriptedControlOwners > 0 && pose != null)
+            scriptedPose = pose;
+    }
+
+    public void ReleaseScriptedControl()
+    {
+        scriptedControlOwners = Mathf.Max(0, scriptedControlOwners - 1);
+        if (scriptedControlOwners > 0)
+            return;
+        scriptedPose = null;
+        suppressMouse = isHinting;
+        camPosInitialized = false;
+        focusInitialized = false;
+        SnapBehindTarget();
+    }
+
+    public void ForceReleaseScriptedControl()
+    {
+        scriptedControlOwners = 0;
+        scriptedPose = null;
+        suppressMouse = isHinting;
+        camPosInitialized = false;
+        focusInitialized = false;
+        SnapBehindTarget();
     }
 
     #endregion

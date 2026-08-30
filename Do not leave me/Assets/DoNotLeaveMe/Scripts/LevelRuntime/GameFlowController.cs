@@ -1101,6 +1101,7 @@ public class GameFlowController : MonoBehaviour
             Entry("Level02", "Level_02", "ToLevel02", level01Level02SharedArtScene, level02Level03SharedArtScene),
             Entry("Level03", "Level_03", "ToLevel03", level02Level03SharedArtScene, level03Level04SharedArtScene),
             Entry("Level04", "Level_04", "ToLevel04", level03Level04SharedArtScene, level04Level045SharedArtScene),
+            Entry("Level04A", "Level_04A", "ToLevel045"),
             Entry("Level04.5", "Level_04B", "ToLevel045", level04Level045SharedArtScene, level045Level05SharedArtScene),
             Entry("Level05", "Level_05", "ToLevel05", level045Level05SharedArtScene)
         };
@@ -1173,6 +1174,14 @@ public class GameFlowController : MonoBehaviour
             if (actors != null && actors.Human != null && actors.Dog != null && control != null)
             {
                 control.ForceHumanOnly(true);
+                Level04BParkourController parkour = FindObjectOfType<Level04BParkourController>();
+                if (parkour != null && parkour.CurrentPhase != Level04BParkourController.Phase.Released &&
+                    parkour.CurrentPhase != Level04BParkourController.Phase.Failed)
+                {
+                    level045PlayerBindingRoutine = null;
+                    Debug.Log("[L045Pursuit] parkour owns dog movement; orbit binding skipped.", this);
+                    yield break;
+                }
                 DogOrbitFollower follower = actors.Dog.GetComponent<DogOrbitFollower>();
                 if (follower == null)
                     follower = actors.Dog.gameObject.AddComponent<DogOrbitFollower>();
@@ -1193,6 +1202,15 @@ public class GameFlowController : MonoBehaviour
     IEnumerator StartLevel045PursuitAfterDelay()
     {
         yield return new WaitForSeconds(10f);
+
+        Level04BParkourController parkour = FindObjectOfType<Level04BParkourController>();
+        if (parkour != null && parkour.CurrentPhase != Level04BParkourController.Phase.Released &&
+            parkour.CurrentPhase != Level04BParkourController.Phase.Failed)
+        {
+            level045PursuitRoutine = null;
+            Debug.Log("[L045Pursuit] parkour presentation owns chase pressure; retained monster chase skipped.", this);
+            yield break;
+        }
 
         PlayerActors actors = PlayerActors.Instance;
         if (actors == null || actors.Human == null)
