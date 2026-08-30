@@ -1,0 +1,155 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 419d7e46ef8343a29aad23af19d62ff1, type: 3}
+  m_Name: ReadingArchiveCatalog
+  m_EditorClassIdentifier: 
+  entries:
+  - id: story.level_01.01
+    title: 第一关 · 笔记残页（一）
+    category: 0
+    humanPages:
+    - {fileID: 21300000, guid: 1e2f518605353f741ac2f2f996059cb1, type: 3}
+    dogPages:
+    - {fileID: 21300000, guid: 9a3c5a2d29593de4ea2aba55fec61494, type: 3}
+  - id: story.level_01.02
+    title: 第一关 · 遗留报告
+    category: 0
+    humanPages:
+    - {fileID: 21300000, guid: 1988fc24cfc6f0347abebe1fc8eee859, type: 3}
+    dogPages:
+    - {fileID: 21300000, guid: b75d38084209917428be8e1172907b41, type: 3}
+  - id: story.level_01.03
+    title: 第一关 · 异常观察记录
+    category: 0
+    humanPages:
+    - {fileID: 21300000, guid: 15dd07c31a3d36f4f830822ef9f0c3a3, type: 3}
+    dogPages:
+    - {fileID: 21300000, guid: 5b24f54b1ce0a01428cf59773c342074, type: 3}
+  - id: story.level_02.01
+    title: 第二关 · 调查报告
+    category: 0
+    humanPages:
+    - {fileID: 21300000, guid: 5fc79ee6d4728fb4bacd414f3ebd503a, type: 3}
+    dogPages:
+    - {fileID: 21300000, guid: cf2821d3a20132e4583776394e3e4c83, type: 3}
+  - id: story.level_02.02
+    title: 第二关 · 笔记残页
+    category: 0
+    humanPages:
+    - {fileID: 21300000, guid: 274dbfda7dd159e4d8007ce4fbfac7ad, type: 3}
+    dogPages:
+    - {fileID: 21300000, guid: 309e6a0c94ad93840bf494125085f513, type: 3}
+  - id: story.level_03.01
+    title: 第三关 · 公告板
+    category: 0
+    humanPages:
+    - {fileID: 21300000, guid: 46513ec07d8603442993e95b5d67b704, type: 3}
+    dogPages:
+    - {fileID: 21300000, guid: a92e8b0a342bbff44a8316dd5a877c08, type: 3}
+  - id: story.level_03.02
+    title: 第三关 · 陈旧纸条
+    category: 0
+    humanPages:
+    - {fileID: 21300000, guid: 4a94e2db1ed146541b2096275321acde, type: 3}
+    dogPages:
+    - {fileID: 21300000, guid: ee29356df7c3ed9488a8313aaddb1e6a, type: 3}
+  - id: story.level_04.01
+    title: 第四关 · 陈旧纸条
+    category: 0
+    humanPages:
+    - {fileID: 21300000, guid: f3634b04ee3f74d4eaa0260709e743de, type: 3}
+    dogPages:
+    - {fileID: 21300000, guid: a3de9e8e5f16b10408dd3e2eb54cf325, type: 3}
+  - id: story.level_04.02
+    title: 第四关 · 陈旧报告
+    category: 0
+    humanPages:
+    - {fileID: 21300000, guid: fc8e33c093a51c348877151cc17b1d91, type: 3}
+    - {fileID: 21300000, guid: 14d4a27c1548cd74c931e0fdc21fe139, type: 3}
+    dogPages:
+    - {fileID: 21300000, guid: 7dac52b296e95444d83477dd25021942, type: 3}
+    - {fileID: 21300000, guid: 0f213723fe062e445aa651653fcee2fd, type: 3}
+  - id: story.level_04.03
+    title: 第四关 · 笔记残页（一）
+    category: 0
+    humanPages:
+    - {fileID: 21300000, guid: d469db7180404ac4a920a1da3cd9438b, type: 3}
+    dogPages:
+    - {fileID: 21300000, guid: 79c554642ac70a546baed8c51c6e71fd, type: 3}
+  - id: story.level_04.04
+    title: 第四关 · 笔记残页（二）
+    category: 0
+    humanPages:
+    - {fileID: 21300000, guid: b0dc1c4d2cecbc54286338fe2c14d53e, type: 3}
+    dogPages:
+    - {fileID: 21300000, guid: 26bfd31b96347e146b3541a819861a54, type: 3}
+  - id: story.level_05.01
+    title: 第五关 · 报告组（一）
+    category: 0
+    humanPages:
+    - {fileID: 21300000, guid: bf64386cb9eac9947a5102da2f3e6d52, type: 3}
+    - {fileID: 21300000, guid: 094988afe23b6d444875efdca4ffc5d3, type: 3}
+    - {fileID: 21300000, guid: 028c3e3f997d776479145f787ed02acc, type: 3}
+    dogPages:
+    - {fileID: 21300000, guid: 9cd9e0ee5bf42e547b5faaca901ea10c, type: 3}
+    - {fileID: 21300000, guid: 2385dc471ca14c347b52486538c3db03, type: 3}
+    - {fileID: 21300000, guid: a1c9ea1976070604a958a4ab1cdcf821, type: 3}
+  - id: story.level_05.02
+    title: 第五关 · 报告组（二）
+    category: 0
+    humanPages:
+    - {fileID: 21300000, guid: be4429e5af91dba4287ae579f6db676d, type: 3}
+    - {fileID: 21300000, guid: 975c990277efa1f40bf9129dc4ebe5e3, type: 3}
+    - {fileID: 21300000, guid: 44eed8aa97ca4d14ea5cdfbef7a1a62c, type: 3}
+    dogPages:
+    - {fileID: 21300000, guid: cfa6094434a25b54abb2bcdb70d36b05, type: 3}
+    - {fileID: 21300000, guid: 6fe38906bfb08f54da07ba0585e8b6e4, type: 3}
+    - {fileID: 21300000, guid: 4cd007568420ca24ab9f1f31a0038d83, type: 3}
+  - id: story.level_05.03
+    title: 第五关 · 报告组（三）
+    category: 0
+    humanPages:
+    - {fileID: 21300000, guid: da510166c0da73c40bfd79a63d88116e, type: 3}
+    dogPages:
+    - {fileID: 21300000, guid: f17825c41e0b63e488774c6f632c7b98, type: 3}
+  - id: story.level_05.04
+    title: 第五关 · 死亡证明
+    category: 0
+    humanPages:
+    - {fileID: 21300000, guid: d1a30350be6a7af46aef05b3e8a5160d, type: 3}
+    dogPages:
+    - {fileID: 21300000, guid: d5f66e3d75e8abd46934f342f4097393, type: 3}
+  - id: controls.opening
+    title: 基础操作说明
+    category: 1
+    humanPages:
+    - {fileID: 21300000, guid: 210bd5f3f6b730d4587d18f333808e33, type: 3}
+    - {fileID: 21300000, guid: e398845e8e9ce1c4f99bb026a77f740f, type: 3}
+    - {fileID: 21300000, guid: 4b3164a77d19a4c438b01b9df2ccd83d, type: 3}
+    - {fileID: 21300000, guid: 2d8ffc9a84087d945a28f99dc08bec99, type: 3}
+    dogPages:
+    - {fileID: 21300000, guid: 210bd5f3f6b730d4587d18f333808e33, type: 3}
+  - id: controls.checkpoint
+    title: 存档地毯说明
+    category: 1
+    humanPages:
+    - {fileID: 21300000, guid: 217bac19874211248aa2c03034e5d97d, type: 3}
+    - {fileID: 21300000, guid: 86d5efbba836bea448797e0d7a9f49d9, type: 3}
+    dogPages:
+    - {fileID: 21300000, guid: e398845e8e9ce1c4f99bb026a77f740f, type: 3}
+  - id: controls.level04b
+    title: 第四点五关操作提示
+    category: 1
+    humanPages:
+    - {fileID: 21300000, guid: a001b6a9b9a22c74d97bd6a5114cefaa, type: 3}
+    dogPages:
+    - {fileID: 21300000, guid: e398845e8e9ce1c4f99bb026a77f740f, type: 3}

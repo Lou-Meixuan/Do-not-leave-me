@@ -30,6 +30,9 @@ public class PlayerControl : MonoBehaviour
 
     void Update()
     {
+        if (ReadingArchiveController.IsShowing)
+            return;
+
         if (human == null)
             return;
 
@@ -74,6 +77,13 @@ public class PlayerControl : MonoBehaviour
 
     void FixedUpdate()
     {
+        if (ReadingArchiveController.IsShowing)
+        {
+            if (activeActor != null)
+                activeActor.Stop();
+            return;
+        }
+
         if (activeActor == null)
             return;
 

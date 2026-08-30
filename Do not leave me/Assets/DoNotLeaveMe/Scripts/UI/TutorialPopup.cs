@@ -17,6 +17,9 @@ public class TutorialPopup : MonoBehaviour
     public const string PrefKey = "DoNotLeaveMe.TutorialShown";
     public const string CheckpointPrefKeyDefault = "DoNotLeaveMe.SaveAreaTutorialShown";
     public const string Level045PrefKeyDefault = "DoNotLeaveMe.Level04BTutorialShown";
+    public const string OpeningArchiveId = "controls.opening";
+    public const string CheckpointArchiveId = "controls.checkpoint";
+    public const string LevelIntroArchiveId = "controls.level04b";
 
     [Header("面板")]
     public GameObject root;
@@ -78,6 +81,8 @@ public class TutorialPopup : MonoBehaviour
     private float prevTimeScale = 1f;
     private bool prevCursorVisible;
     private CursorLockMode prevCursorLock;
+    private bool activeManagePause = true;
+    private System.Action replayClosed;
 
     void Awake()
     {
@@ -88,6 +93,9 @@ public class TutorialPopup : MonoBehaviour
 
         if (rememberAcrossRuns && PlayerPrefs.GetInt(PrefKey, 0) == 1)
             finished = true;
+
+        if (GetComponent<ReadingArchiveController>() == null)
+            gameObject.AddComponent<ReadingArchiveController>();
 
         // 开局把三组图的挂载情况和“看过了”状态打出来，省得每次靠猜
         Debug.Log("[TutorialPopup] 教程图配置：" +
@@ -292,7 +300,7 @@ public class TutorialPopup : MonoBehaviour
 
         if (levelIntroDelaySeconds <= 0f)
         {
-            ShowOnce(rolePages, levelIntroPrefKey);
+            ShowOnce(rolePages, levelIntroPrefKey, LevelIntroArchiveId, CurrentArchiveRole());
             return;
         }
 
@@ -303,14 +311,16 @@ public class TutorialPopup : MonoBehaviour
 
     public void Show()
     {
-        ShowPages(RolePages(humanPages, dogPages, "开局教学"), PrefKey, true);
+        ShowPages(RolePages(humanPages, dogPages, "开局教学"), PrefKey, true, true,
+            OpeningArchiveId, CurrentArchiveRole());
     }
 
     /// <summary>
     /// 弹一组额外的教程图，用自己的 prefKey 单独记\u201c看过了\u201d。
     /// 已经看过、正在弹别的、或者没配图，都直接不弹并返回 false。
     /// </summary>
-    public bool ShowOnce(Sprite[] content, string prefKey)
+    public bool ShowOnce(Sprite[] content, string prefKey, string archiveId = null,
+        ReadingArchiveRole? archiveRole = null)
     {
         if (IsShowing || content == null || content.Length == 0)
             return false;
@@ -318,7 +328,16 @@ public class TutorialPopup : MonoBehaviour
         if (rememberAcrossRuns && !string.IsNullOrEmpty(prefKey) && PlayerPrefs.GetInt(prefKey, 0) == 1)
             return false;
 
-        ShowPages(content, prefKey, false);
+        ShowPages(content, prefKey, false, true, archiveId, archiveRole);
+        return IsShowing;
+    }
+
+    public bool ShowReplay(Sprite[] content, System.Action onClosed)
+    {
+        if (IsShowing || content == null || content.Length == 0)
+            return false;
+        replayClosed = onClosed;
+        ShowPages(content, null, false, false, null, null);
         return IsShowing;
     }
 
@@ -344,7 +363,7 @@ public class TutorialPopup : MonoBehaviour
             return false;
 
         if (checkpointDelaySeconds <= 0f)
-            return ShowOnce(rolePages, checkpointPrefKey);
+            return ShowOnce(rolePages, checkpointPrefKey, CheckpointArchiveId, CurrentArchiveRole());
 
         checkpointQueued = true;
         StartCoroutine(ShowDelayed(rolePages, checkpointPrefKey, checkpointDelaySeconds,
@@ -370,10 +389,13 @@ public class TutorialPopup : MonoBehaviour
         if (onDone != null)
             onDone();
 
-        ShowOnce(content, prefKey);
+        string archiveId = prefKey == checkpointPrefKey ? CheckpointArchiveId :
+            prefKey == levelIntroPrefKey ? LevelIntroArchiveId : null;
+        ShowOnce(content, prefKey, archiveId, CurrentArchiveRole());
     }
 
-    void ShowPages(Sprite[] content, string prefKey, bool isIntro)
+    void ShowPages(Sprite[] content, string prefKey, bool isIntro, bool managePause,
+        string archiveId, ReadingArchiveRole? archiveRole)
     {
         if (root == null || content == null || content.Length == 0)
         {
@@ -386,21 +408,27 @@ public class TutorialPopup : MonoBehaviour
         activePages = content;
         activePrefKey = prefKey;
         activeIsIntro = isIntro;
+        activeManagePause = managePause;
 
         IsShowing = true;
         index = 0;
 
-        prevTimeScale = Time.timeScale > 0f ? Time.timeScale : 1f;
-        Time.timeScale = 0f;
-
-        prevCursorVisible = Cursor.visible;
-        prevCursorLock = Cursor.lockState;
-        Cursor.visible = true;
-        Cursor.lockState = CursorLockMode.None;
+        if (activeManagePause)
+        {
+            prevTimeScale = Time.timeScale > 0f ? Time.timeScale : 1f;
+            Time.timeScale = 0f;
+            prevCursorVisible = Cursor.visible;
+            prevCursorLock = Cursor.lockState;
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
+        }
 
         root.SetActive(true);
         ParchmentAudio.PlayOpen();
         Refresh();
+
+        if (!string.IsNullOrEmpty(archiveId) && archiveRole.HasValue)
+            ReadingArchiveProgress.Discover(archiveId, archiveRole.Value);
     }
 
     public void Next()
@@ -442,13 +470,26 @@ public class TutorialPopup : MonoBehaviour
             PlayerPrefs.Save();
         }
 
-        Time.timeScale = prevTimeScale;
-        Cursor.visible = prevCursorVisible;
-        Cursor.lockState = prevCursorLock;
+        if (activeManagePause)
+        {
+            Time.timeScale = prevTimeScale;
+            Cursor.visible = prevCursorVisible;
+            Cursor.lockState = prevCursorLock;
+        }
 
         if (root != null)
             root.SetActive(false);
         ParchmentAudio.PlayClose();
+        System.Action callback = replayClosed;
+        replayClosed = null;
+        if (callback != null)
+            callback();
+    }
+
+    static ReadingArchiveRole CurrentArchiveRole()
+    {
+        PlayerControl control = FindObjectOfType<PlayerControl>();
+        return control != null && control.IsDogActive ? ReadingArchiveRole.Dog : ReadingArchiveRole.Human;
     }
 
     void Refresh()

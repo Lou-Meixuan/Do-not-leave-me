@@ -328,8 +328,8 @@ MonoBehaviour:
   defaultObjective: "\u627E\u5230\u51FA\u53E3"
   controlsText: {fileID: 896066242}
   humanControls: "WASD \u79FB\u52A8   Space \u8DF3\u8DC3   LeftShift \u75BE\u8DD1\nE
-    \u4E92\u52A8   F \u63A8\u7BB1\u5B50   Tab \u5207\u6362\u5230\u5C0F\u72D7"
-  dogControls: "WASD \u79FB\u52A8   Space \u8DF3\u8DC3   Tab \u5207\u6362\u5230\u4EBA"
+    \u4E92\u52A8   F \u63A8\u7BB1\u5B50   Tab \u5207\u6362\u5230\u5C0F\u72D7   B \u9605\u8BFB\u6863\u6848"
+  dogControls: "WASD \u79FB\u52A8   Space \u8DF3\u8DC3   Tab \u5207\u6362\u5230\u4EBA   B \u9605\u8BFB\u6863\u6848"
   hintGroup: {fileID: 1455037560}
   hintText: {fileID: 1722910285}
   defaultHintDuration: 3

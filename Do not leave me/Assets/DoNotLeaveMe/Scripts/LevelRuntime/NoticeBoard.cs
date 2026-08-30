@@ -25,6 +25,8 @@ public class NoticeBoard : MonoBehaviour
     [SerializeField] private float heightTolerance = 3f;
 
     [Header("公告内容")]
+    [Tooltip("阅读档案中的稳定 ID；迁移后不要改名。")]
+    [SerializeField] private string archiveEntryId;
     [Tooltip("人读到的页面，按数组顺序翻阅。留空 = 人读不了。")]
     [SerializeField] private Sprite[] humanPages;
 
@@ -142,7 +144,11 @@ public class NoticeBoard : MonoBehaviour
     bool Read(PlayerActor actor)
     {
         bool isDog = actor.Role == PlayerActor.ActorRole.Dog;
-        Sprite[] pages = PagesFor(isDog);
+        ReadingArchiveRole archiveRole = isDog ? ReadingArchiveRole.Dog : ReadingArchiveRole.Human;
+        ReadingArchiveCatalog.Entry archiveEntry = ReadingArchiveCatalog.Instance != null
+            ? ReadingArchiveCatalog.Instance.Find(archiveEntryId)
+            : null;
+        Sprite[] pages = archiveEntry != null ? archiveEntry.PagesFor(archiveRole) : PagesFor(isDog);
         if (pages == null)
         {
             Debug.LogWarning("[NoticeBoard] " + name + " 没配 " +
@@ -163,6 +169,7 @@ public class NoticeBoard : MonoBehaviour
             return false;
 
         hasBeenRead = true;
+        ReadingArchiveProgress.Discover(archiveEntryId, archiveRole);
         return true;
     }
 

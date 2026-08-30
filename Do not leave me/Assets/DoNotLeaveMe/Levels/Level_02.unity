@@ -893,6 +893,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   readRadius: 2.5
   heightTolerance: 3
+  archiveEntryId: story.level_02.01
   humanPages:
   - {fileID: 21300000, guid: 5fc79ee6d4728fb4bacd414f3ebd503a, type: 3}
   dogPages:
@@ -3451,6 +3452,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   readRadius: 2.5
   heightTolerance: 3
+  archiveEntryId: story.level_02.02
   humanPages:
   - {fileID: 21300000, guid: 274dbfda7dd159e4d8007ce4fbfac7ad, type: 3}
   dogPages:
