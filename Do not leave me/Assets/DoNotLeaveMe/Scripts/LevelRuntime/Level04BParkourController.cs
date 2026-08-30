@@ -85,6 +85,7 @@ public sealed class Level04BParkourController : MonoBehaviour, ILevelTemporarySt
     private float nextBarkTime;
     private bool warnedMissingBark;
     private bool ownershipHeld;
+    private bool cameraReleasedForWalkout;
     private bool dogOrbitWasFollowing;
     private float tutorialEndsAt;
 
@@ -337,7 +338,12 @@ public sealed class Level04BParkourController : MonoBehaviour, ILevelTemporarySt
             dogRunner.BeginWalkout();
         UpdateCameraPose(true);
         if (cameraFollow != null && cameraPose != null)
+        {
             cameraFollow.SnapToScriptedPose(cameraPose);
+            cameraFollow.ReleaseScriptedControl();
+            cameraFollow.AcquireExternalInputLock();
+            cameraReleasedForWalkout = true;
+        }
         if (activePath == null || activePath.Length == 0)
             CompleteWalkout();
     }
@@ -435,6 +441,7 @@ public sealed class Level04BParkourController : MonoBehaviour, ILevelTemporarySt
         if (ownershipHeld)
             return;
         ownershipHeld = true;
+        cameraReleasedForWalkout = false;
         playerControl.AcquireParkourControl();
         dogOrbitWasFollowing = dogOrbit != null && dogOrbit.IsFollowing;
         if (dogOrbit != null)
@@ -451,7 +458,15 @@ public sealed class Level04BParkourController : MonoBehaviour, ILevelTemporarySt
         if (playerControl != null)
             playerControl.ReleaseParkourControl();
         if (cameraFollow != null)
-            cameraFollow.ReleaseScriptedControl();
+        {
+            if (cameraReleasedForWalkout)
+            {
+                cameraFollow.ReleaseExternalInputLock();
+                cameraReleasedForWalkout = false;
+            }
+            else
+                cameraFollow.ReleaseScriptedControl();
+        }
         if (dogOrbitWasFollowing && dogOrbit != null && human != null && dog != null)
             dogOrbit.BeginOrbit(human, dog);
     }
@@ -493,6 +508,12 @@ public sealed class Level04BParkourController : MonoBehaviour, ILevelTemporarySt
         if (cameraPose == null || human == null)
             return;
         bool walking = phase == Phase.Walkout || phase == Phase.Tutorial;
+        if (walking && cameraFollow != null)
+        {
+            cameraFollow.ConfigureForwardScriptedPose(cameraPose, human.transform);
+            cameraFollow.SetScriptedPose(cameraPose);
+            return;
+        }
         Vector3 localOffset = walking
             ? new Vector3(0f, walkCameraOffset.y, walkCameraOffset.z)
             : chaseCameraOffset;

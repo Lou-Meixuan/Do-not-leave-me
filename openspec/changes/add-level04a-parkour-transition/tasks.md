@@ -17,6 +17,9 @@
 - [x] 3.2 Add a concealment-controlled normalization to the shared dark exit corridor for human, dog, camera, and monster presentation.
 - [x] 3.3 Complete the guided walk, `怪物似乎追丢了` message, and normal-control restoration inside the exit corridor.
 - [x] 3.4 Preserve the earlier chase camera, then snap behind the human only when either black branch emerges into the shared exit corridor.
+- [x] 3.5 Hand scripted camera control back to the player by adopting its final orbit pose without a second initialization snap.
+- [x] 3.6 Use the free camera's own distance, focus height, and pitch for the fixed post-black framing so release changes input ownership only.
+- [x] 3.7 Use the free camera throughout the post-black walkout, locking only camera input until the tutorial releases control.
 
 ## 4. Configurable exit
 

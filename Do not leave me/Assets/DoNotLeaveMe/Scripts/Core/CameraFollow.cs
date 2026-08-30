@@ -174,6 +174,7 @@ public class CameraFollow : MonoBehaviour
     private int scriptedControlOwners;
     private Transform scriptedPose;
     private float scriptedBlendSpeed = 8f;
+    private int externalInputLocks;
 
     #endregion
 
@@ -262,7 +263,7 @@ public class CameraFollow : MonoBehaviour
     void HandleMouseInput()
     {
         // 提示镜头期间冻结鼠标转向，保证玩家的移动方向不会因镜头飞走而错乱
-        if (suppressMouse) return;
+        if (suppressMouse || externalInputLocks > 0) return;
 
         if (enableMouseRotation)
         {
@@ -286,7 +287,7 @@ public class CameraFollow : MonoBehaviour
 
     void HandleZoomInput()
     {
-        if (!enableZoom || suppressMouse) return;
+        if (!enableZoom || suppressMouse || externalInputLocks > 0) return;
 
         float scroll = Input.GetAxis("Mouse ScrollWheel");
         if (Mathf.Abs(scroll) > 0.0001f)
@@ -662,6 +663,32 @@ public class CameraFollow : MonoBehaviour
         transform.SetPositionAndRotation(pose.position, pose.rotation);
     }
 
+    /// <summary>按自由镜头自己的距离、焦点高度和俯仰角生成正后方脚本镜头。</summary>
+    public void ConfigureForwardScriptedPose(Transform pose, Transform subject)
+    {
+        if (pose == null || subject == null)
+            return;
+        RefreshTargetMetrics();
+        float subjectFocusHeight = subject == target ? ActiveFocusHeight() : focusHeight;
+        Vector3 focus = subject.position + Vector3.up * subjectFocusHeight;
+        float wantedDistance = GetBaseDistance();
+        float forwardYaw = subject.eulerAngles.y + initialYawOffset;
+        float forwardPitch = Mathf.Clamp(angle, minAngle, maxAngle);
+        Quaternion orbit = Quaternion.Euler(forwardPitch, forwardYaw, 0f);
+        Vector3 position = focus + orbit * Vector3.back * wantedDistance;
+        pose.SetPositionAndRotation(position, Quaternion.LookRotation(focus - position, Vector3.up));
+    }
+
+    public void AcquireExternalInputLock()
+    {
+        externalInputLocks++;
+    }
+
+    public void ReleaseExternalInputLock()
+    {
+        externalInputLocks = Mathf.Max(0, externalInputLocks - 1);
+    }
+
     public void ReleaseScriptedControl()
     {
         scriptedControlOwners = Mathf.Max(0, scriptedControlOwners - 1);
@@ -669,9 +696,38 @@ public class CameraFollow : MonoBehaviour
             return;
         scriptedPose = null;
         suppressMouse = isHinting;
-        camPosInitialized = false;
-        focusInitialized = false;
-        SnapBehindTarget();
+        AdoptCurrentPoseForFreeControl();
+    }
+
+    /// <summary>用脚本镜头的最后一帧初始化自由环绕参数，交还控制时不发生位置跳变。</summary>
+    void AdoptCurrentPoseForFreeControl()
+    {
+        if (target == null)
+        {
+            camPosInitialized = false;
+            focusInitialized = false;
+            return;
+        }
+
+        RefreshTargetMetrics();
+        Vector3 focus = GetDesiredFocus();
+        Vector3 look = focus - transform.position;
+        float horizontal = new Vector2(look.x, look.z).magnitude;
+        if (look.sqrMagnitude > 0.0001f)
+        {
+            yaw = Mathf.Atan2(look.x, look.z) * Mathf.Rad2Deg;
+            pitch = Mathf.Clamp(-Mathf.Atan2(look.y, Mathf.Max(0.0001f, horizontal)) * Mathf.Rad2Deg,
+                minAngle, maxAngle);
+        }
+
+        currentFocus = focus;
+        currentDistance = Mathf.Max(look.magnitude, minCollisionDistance);
+        baseDistanceSmoothed = currentDistance;
+        baseDistanceInit = true;
+        focusInitialized = true;
+        camPosInitialized = true;
+        velocityRef = Vector3.zero;
+        focusVel = Vector3.zero;
     }
 
     public void ForceReleaseScriptedControl()
