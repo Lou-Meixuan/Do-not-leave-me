@@ -335,6 +335,9 @@ public sealed class Level04BParkourController : MonoBehaviour, ILevelTemporarySt
         proximity = 0f;
         if (dogRunner != null)
             dogRunner.BeginWalkout();
+        UpdateCameraPose(true);
+        if (cameraFollow != null && cameraPose != null)
+            cameraFollow.SnapToScriptedPose(cameraPose);
         if (activePath == null || activePath.Length == 0)
             CompleteWalkout();
     }
@@ -490,7 +493,9 @@ public sealed class Level04BParkourController : MonoBehaviour, ILevelTemporarySt
         if (cameraPose == null || human == null)
             return;
         bool walking = phase == Phase.Walkout || phase == Phase.Tutorial;
-        Vector3 localOffset = walking ? walkCameraOffset : chaseCameraOffset;
+        Vector3 localOffset = walking
+            ? new Vector3(0f, walkCameraOffset.y, walkCameraOffset.z)
+            : chaseCameraOffset;
         Quaternion facing = human.transform.rotation;
         Vector3 wanted = human.transform.position + facing * localOffset;
         cameraPose.position = snap ? wanted : Vector3.Lerp(cameraPose.position, wanted, 0.35f);

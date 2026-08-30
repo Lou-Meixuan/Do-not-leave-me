@@ -49,6 +49,12 @@ After normalization the system SHALL perform the guided walk, display `怪物似
 - **THEN** the completion message is shown
 - **AND** normal camera and movement control are restored
 
+#### Scenario: Player emerges from either dark branch
+- **WHEN** the player is normalized from either black branch into the shared exit corridor
+- **THEN** the camera immediately moves behind the human facing the corridor direction
+- **AND** all camera behavior before the black transition remains unchanged
+- **AND** free camera control later resumes from this forward-facing view
+
 ### Requirement: Level 04A exit is configurable
 
 The Level 04A physical exit SHALL advance through the formal route system to a serialized successor scene, initially Level 04B.

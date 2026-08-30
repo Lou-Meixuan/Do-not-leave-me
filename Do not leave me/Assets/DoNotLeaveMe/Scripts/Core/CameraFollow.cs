@@ -653,6 +653,15 @@ public class CameraFollow : MonoBehaviour
             scriptedPose = pose;
     }
 
+    /// <summary>黑场重新定位后立刻采用脚本镜头，不播放从旧分支角度转过来的过程。</summary>
+    public void SnapToScriptedPose(Transform pose)
+    {
+        if (scriptedControlOwners <= 0 || pose == null)
+            return;
+        scriptedPose = pose;
+        transform.SetPositionAndRotation(pose.position, pose.rotation);
+    }
+
     public void ReleaseScriptedControl()
     {
         scriptedControlOwners = Mathf.Max(0, scriptedControlOwners - 1);

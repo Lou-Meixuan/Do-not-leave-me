@@ -16,6 +16,7 @@
 - [x] 3.1 Author independent left/right dark approaches with no visible physical merge.
 - [x] 3.2 Add a concealment-controlled normalization to the shared dark exit corridor for human, dog, camera, and monster presentation.
 - [x] 3.3 Complete the guided walk, `怪物似乎追丢了` message, and normal-control restoration inside the exit corridor.
+- [x] 3.4 Preserve the earlier chase camera, then snap behind the human only when either black branch emerges into the shared exit corridor.
 
 ## 4. Configurable exit
 
