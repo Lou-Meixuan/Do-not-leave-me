@@ -84,3 +84,32 @@ mem-log/
 screenshots/
 .codely-cli/settings.json
 .com-unity-codely.json
+
+# ===== 补充（2026-08-30 整理时添加）=====
+
+# IDE 设置
+/.idea/
+/.vscode/
+/.vsconfig
+
+# Wwise：生成物不入库，Originals（音频源文件）保留
+/[Uu]nityProject_WwiseProject/.cache/
+/[Uu]nityProject_WwiseProject/[Gg]enerated[Ss]ound[Bb]anks/
+/[Uu]nityProject_WwiseProject/*.wsettings
+/[Uu]nityProject_WwiseProject/*.validationcache
+/[Uu]nityProject_WwiseProject/*.wproj.autosave
+/[Uu]nityProject_WwiseProject/[Bb]ackup/
+/[Aa]ssets/[Ss]treamingAssets/[Aa]udio/
+/[Aa]ssets/[Ss]treamingAssets/[Aa]udio.meta
+
+# Wwise 安装包（20MB，装完就没用了）
+WwiseUnityIntegration_*_Src.zip
+
+# 运行日志 / 临时产物
+logRunSetup.txt
+*-debug.log
+sysinfo.txt
+/[Rr]ecordings/
+
+# 归档资产：放在 Assets/ 外面，Unity 不导入。不入库（体积大且不再变动）
+/_ArchivedAssets/

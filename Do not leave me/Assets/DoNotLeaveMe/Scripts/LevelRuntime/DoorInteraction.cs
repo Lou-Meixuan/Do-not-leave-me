@@ -1,0 +1,315 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+/// <summary>
+/// 门前的交互区：站进来按 E 开门。
+///
+/// 配上 requiredKey 之后，没拿钥匙时按 E 只会提示"锁着"，
+/// 所以"拿钥匙 → 走到门口 → 按 E"这个顺序是强制的。
+///
+/// 摆放位置：门前面（玩家会走到的那一侧）一小块区域。
+/// Collider 记得勾 Is Trigger。
+/// </summary>
+[RequireComponent(typeof(Collider))]
+[AddComponentMenu("DoNotLeaveMe/Door Interaction")]
+public class DoorInteraction : MonoBehaviour, ILevelTemporaryState
+{
+    [Header("开哪扇门")]
+    [SerializeField] private Door door;
+    [Tooltip("门不在本场景里的时候用（过关门是摆在 SharedArt 场景里的，Inspector 拖不过来）。\n" +
+             "填名字片段，比如 ToLevel02，运行时会在所有已加载场景里找。\n" +
+             "上面的 Door 拖了东西就以拖的为准。")]
+    [SerializeField] private string doorNameToken;
+
+    [Header("前置条件（比如踏板）")]
+    [Tooltip("这些机关必须先完成，门才认钥匙。\n" +
+             "可以拖 ActuatorTrigger（踏板）、MechanismState、Door 等任何带 IsComplete 的组件。")]
+    [SerializeField] private MonoBehaviour[] prerequisites;
+
+    [Header("需要的钥匙")]
+    [Tooltip("留空 = 不需要钥匙，站进来按 E 就能开")]
+    [SerializeField] private HumanKey requiredKey;
+
+    [Header("交互")]
+    [SerializeField] private KeyCode interactKey = KeyCode.E;
+    [Tooltip("默认只有人形角色能开门。小狗开不了门。")]
+    [SerializeField] private TriggerRequirement requirement = TriggerRequirement.HumanOnly;
+    [Tooltip("开过之后就不再提示，也不能再按")]
+    [SerializeField] private bool onceOnly = true;
+    [Tooltip("开启门后立刻开始当前正式路线的下一关过渡。")]
+    [SerializeField] private bool advanceRouteOnOpen;
+    [Tooltip("开启门后预加载下一关，但保持玩家位置，等待实体穿过入口后再确认切关。")]
+    [SerializeField] private bool preloadRouteSuccessorOnOpen;
+
+    [Header("Wwise Audio")]
+    [Tooltip("Play_Door_Unlocking. Its Wwise Event also plays RC_Door_Hinge after the configured delay.")]
+    [SerializeField] private AK.Wwise.Event unlockingEvent = new AK.Wwise.Event();
+    [Tooltip("Play_Door_Locked.")]
+    [SerializeField] private AK.Wwise.Event lockedEvent = new AK.Wwise.Event();
+    [Tooltip("Must match the delay on RC_Door_Hinge inside Play_Door_Unlocking.")]
+    [SerializeField, Min(0f)] private float unlockDelaySeconds = 0.4f;
+
+    [Header("提示文字（留空=不提示）")]
+    [SerializeField] private string promptReady = "按 E 开门";
+    [SerializeField] private string promptLocked = "门锁着，得先找到钥匙";
+    [SerializeField] private string promptPrerequisite = "门纹丝不动，好像还缺点什么";
+    [SerializeField] private string promptOpened = "门开了";
+
+    private readonly HashSet<Object> occupants = new HashSet<Object>();
+    private bool opened;
+    private bool opening;
+    private bool lastCanOpen;
+    private bool promptShown;
+    private bool warnedMissingUnlockingEvent;
+    private bool warnedMissingLockedEvent;
+    private Door resolvedDoor;
+
+    /// <summary>
+    /// 关卡复位时重新解锁这个交互区。
+    ///
+    /// 不这么做的话会出这个 bug：重开之后门被机关关回去了，但这里的 opened 还是 true，
+    /// 配合 onceOnly 会让 Update() 一进来就 return —— 玩家重新捡到钥匙走到门口，
+    /// 按 E 完全没反应，连提示都不弹，门就成了死门。
+    ///
+    /// 但门要是还开着（过关门那种永久打开的），就不解锁：
+    /// 否则玩家能对着一扇已经开了的门再按一次 E，把开门后的流程再触发一遍。
+    /// </summary>
+    public void ResetTemporaryState()
+    {
+        StopAllCoroutines();
+        occupants.Clear();
+        opening = false;
+        promptShown = false;
+        lastCanOpen = false;
+
+        // 跨场景的门可能已经被卸载重载过，缓存的引用作废，下次重新按名字找
+        if (!string.IsNullOrEmpty(doorNameToken))
+            resolvedDoor = null;
+
+        Door target = door != null ? door : resolvedDoor;
+        if (target == null || !target.IsOpen)
+            opened = false;
+    }
+
+    /// <summary>Inspector 拖的门优先；没拖就按名字片段跨场景找一次并记住。</summary>
+    Door ResolvedDoor
+    {
+        get
+        {
+            if (door != null)
+                return door;
+
+            if (resolvedDoor == null)
+                resolvedDoor = Door.FindByNameToken(doorNameToken);
+
+            return resolvedDoor;
+        }
+    }
+
+    bool HasKey => requiredKey == null || requiredKey.IsCollected;
+    bool CanOpen => PrerequisitesComplete && HasKey;
+    bool PlayerInside => occupants.Count > 0;
+
+    // 供 L2 GM 诊断读取，不改变门的交互判断。
+    public string DoorNameToken => doorNameToken;
+    public IReadOnlyList<MonoBehaviour> Prerequisites => prerequisites;
+    public bool ArePrerequisitesComplete => PrerequisitesComplete;
+    public bool HasEligibleOccupant => PlayerInside;
+    public bool IsOpened => opened;
+    public Door TargetDoor => ResolvedDoor;
+
+    void OnTriggerEnter(Collider other)
+    {
+        Object occupant = TriggerEligibility.ResolveOccupant(other, requirement);
+        if (occupant == null || !occupants.Add(occupant))
+            return;
+
+        promptShown = false;
+        RefreshPrompt();
+    }
+
+    void OnTriggerExit(Collider other)
+    {
+        Object occupant = TriggerEligibility.ResolveOccupant(other, requirement);
+        if (occupant == null || !occupants.Remove(occupant))
+            return;
+
+        if (occupants.Count == 0)
+            promptShown = false;
+    }
+
+    bool PrerequisitesComplete
+    {
+        get
+        {
+            if (prerequisites == null)
+                return true;
+
+            foreach (MonoBehaviour behaviour in prerequisites)
+            {
+                ILevelPermanentState state = behaviour as ILevelPermanentState;
+                if (state == null || !state.IsComplete)
+                    return false;
+            }
+
+            return true;
+        }
+    }
+
+    void Update()
+    {
+        occupants.RemoveWhere(occupant => occupant == null);
+
+        if (!PlayerInside || opening || (onceOnly && opened))
+            return;
+
+        // 站在门口的时候条件变了（拿到钥匙 / 狗踩上踏板），提示要跟着换一次
+        if (CanOpen != lastCanOpen)
+        {
+            promptShown = false;
+            RefreshPrompt();
+        }
+
+        if (!Input.GetKeyDown(interactKey))
+            return;
+
+        if (!PrerequisitesComplete)
+        {
+            ShowHint(promptPrerequisite);
+            return;
+        }
+
+        if (!HasKey)
+        {
+            PostDoorEvent(lockedEvent, ResolveAudioEmitter(), false);
+            ShowHint(promptLocked);
+            return;
+        }
+
+        Door target = ResolvedDoor;
+        if (target == null)
+        {
+            Debug.LogWarning("[DoorInteraction] 没有连门，按 E 没用。", this);
+            return;
+        }
+
+        // Doors without a required key keep their original immediate-open behaviour.
+        if (requiredKey == null)
+        {
+            CompleteOpen(target);
+            return;
+        }
+
+        opening = true;
+        PostDoorEvent(unlockingEvent, ResolveAudioEmitter(), true);
+        StartCoroutine(OpenAfterUnlockDelay(target));
+    }
+
+    IEnumerator OpenAfterUnlockDelay(Door target)
+    {
+        yield return new WaitForSeconds(unlockDelaySeconds);
+
+        if (target == null)
+        {
+            opening = false;
+            yield break;
+        }
+
+        CompleteOpen(target);
+    }
+
+    void CompleteOpen(Door target)
+    {
+        target.OpenPermanently();
+        opened = true;
+        opening = false;
+        ShowHint(promptOpened);
+
+        if (preloadRouteSuccessorOnOpen)
+        {
+            GameFlowController flow = FindObjectOfType<GameFlowController>();
+            if (flow != null)
+                flow.PreloadRouteSuccessor(this);
+        }
+        else if (advanceRouteOnOpen)
+        {
+            GameFlowController flow = FindObjectOfType<GameFlowController>();
+            if (flow != null)
+                flow.RequestRouteAdvance(this);
+        }
+    }
+
+    void PostDoorEvent(AK.Wwise.Event doorEvent, GameObject emitter, bool unlocking)
+    {
+        if (doorEvent != null && doorEvent.IsValid())
+        {
+            doorEvent.Post(emitter);
+            return;
+        }
+
+        if (unlocking)
+        {
+            if (!warnedMissingUnlockingEvent)
+            {
+                Debug.LogWarning("[DoorInteraction] Play_Door_Unlocking is not assigned.", this);
+                warnedMissingUnlockingEvent = true;
+            }
+        }
+        else if (!warnedMissingLockedEvent)
+        {
+            Debug.LogWarning("[DoorInteraction] Play_Door_Locked is not assigned.", this);
+            warnedMissingLockedEvent = true;
+        }
+    }
+
+    GameObject ResolveAudioEmitter()
+    {
+        foreach (Object occupant in occupants)
+        {
+            Component component = occupant as Component;
+            if (component != null)
+                return component.gameObject;
+
+            GameObject occupantObject = occupant as GameObject;
+            if (occupantObject != null)
+                return occupantObject;
+        }
+
+        return gameObject;
+    }
+
+    void RefreshPrompt()
+    {
+        lastCanOpen = CanOpen;
+
+        if (promptShown || (onceOnly && opened))
+            return;
+
+        promptShown = true;
+        ShowHint(!PrerequisitesComplete ? promptPrerequisite
+               : !HasKey ? promptLocked
+               : promptReady);
+    }
+
+    void ShowHint(string message)
+    {
+        if (string.IsNullOrEmpty(message))
+            return;
+
+        if (HUDController.Instance != null)
+            HUDController.Instance.ShowHint(message);
+    }
+
+    void OnDrawGizmos()
+    {
+        Collider col = GetComponent<Collider>();
+        if (col == null)
+            return;
+
+        Gizmos.color = new Color(0.4f, 0.7f, 1f, 0.25f);
+        Gizmos.DrawCube(col.bounds.center, col.bounds.size);
+        Gizmos.color = new Color(0.4f, 0.7f, 1f, 0.9f);
+        Gizmos.DrawWireCube(col.bounds.center, col.bounds.size);
+    }
+}
