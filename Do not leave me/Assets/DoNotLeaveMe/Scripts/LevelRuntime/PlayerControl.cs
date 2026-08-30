@@ -7,8 +7,12 @@ public class PlayerControl : MonoBehaviour
     private PlayerActor activeActor;
     private CameraFollow cameraFollow;
     private bool humanOnly;
+    private int parkourControlOwners;
 
     public bool IsDogActive => activeActor != null && activeActor.Role == PlayerActor.ActorRole.Dog;
+    public bool IsParkourControlled => parkourControlOwners > 0;
+    public PlayerActor Human => human;
+    public PlayerActor Dog => dog;
 
     public event System.Action<bool> ActiveRoleChanged;
 
@@ -34,6 +38,9 @@ public class PlayerControl : MonoBehaviour
             return;
 
         if (human == null)
+            return;
+
+        if (IsParkourControlled)
             return;
 
         if (!humanOnly && dog != null && Input.GetKeyDown(KeyCode.Tab) && !IsMoverEngaged())
@@ -86,6 +93,13 @@ public class PlayerControl : MonoBehaviour
 
         if (activeActor == null)
             return;
+
+        if (IsParkourControlled)
+        {
+            if (activeActor != human)
+                activeActor.Stop();
+            return;
+        }
 
         if (activeActor.IsExecutionLocked)
         {
@@ -211,6 +225,35 @@ public class PlayerControl : MonoBehaviour
         SetCameraTarget();
         if (ActiveRoleChanged != null)
             ActiveRoleChanged(false);
+    }
+
+    public void AcquireParkourControl()
+    {
+        parkourControlOwners++;
+        if (activeActor != null && activeActor != human)
+            activeActor.Stop();
+        activeActor = human;
+        if (human != null)
+            human.Stop();
+        if (dog != null)
+            dog.Stop();
+        SetCameraTarget();
+        if (ActiveRoleChanged != null)
+            ActiveRoleChanged(false);
+    }
+
+    public void ReleaseParkourControl()
+    {
+        parkourControlOwners = Mathf.Max(0, parkourControlOwners - 1);
+        if (!IsParkourControlled && human != null)
+            human.Stop();
+    }
+
+    public void ForceReleaseParkourControl()
+    {
+        parkourControlOwners = 0;
+        if (human != null)
+            human.Stop();
     }
 
     static CooperativeRailMover FindEngagedRailMover()

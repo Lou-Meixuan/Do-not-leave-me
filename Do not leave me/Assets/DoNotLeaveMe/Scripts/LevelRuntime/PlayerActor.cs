@@ -56,6 +56,7 @@ public class PlayerActor : MonoBehaviour
     public bool IsExecutionLocked => executionLockCount > 0;
     public float ConfiguredWalkSpeed => walkSpeed;
     public float RuntimeMovementSpeedMultiplier => runtimeMovementSpeedMultiplier;
+    public bool IsGroundedForParkour => IsGrounded();
 
     /// <summary>相机注视点；未配置时回退到根节点。</summary>
     public Transform FocusAnchor => focusAnchor != null ? focusAnchor : transform;
@@ -229,6 +230,43 @@ public class PlayerActor : MonoBehaviour
     {
         body.velocity = new Vector3(0f, body.velocity.y, 0f);
         SetState(IsGrounded() ? ActorState.Idle : ActorState.Jumping);
+    }
+
+    /// <summary>
+    /// Scripted sequences own only horizontal placement. Gravity and the current
+    /// vertical velocity remain authoritative so the normal jump still works.
+    /// </summary>
+    public void SetParkourHorizontalPose(Vector3 worldPosition, Quaternion worldRotation, bool running)
+    {
+        if (body == null)
+            return;
+
+        Vector3 target = worldPosition;
+        target.y = body.position.y;
+        Vector3 velocity = body.velocity;
+        body.velocity = new Vector3(0f, ClampFall(velocity.y), 0f);
+        body.MovePosition(target);
+        body.MoveRotation(worldRotation);
+        SetState(!IsGrounded()
+            ? ActorState.Jumping
+            : running ? ActorState.Sprinting : ActorState.Walking);
+    }
+
+    public void SetParkourDogPose(Vector3 worldPosition, Quaternion worldRotation, bool running)
+    {
+        if (body == null)
+            return;
+
+        Vector3 target = worldPosition;
+        target.y = body.position.y;
+        Vector3 velocity = body.velocity;
+        body.velocity = new Vector3(0f, ClampFall(velocity.y), 0f);
+        body.MovePosition(target);
+        body.MoveRotation(worldRotation);
+        if (role == ActorRole.Dog)
+            SetState(!IsGrounded()
+                ? ActorState.Jumping
+                : running ? ActorState.Sprinting : ActorState.Walking);
     }
 
     public void Jump()

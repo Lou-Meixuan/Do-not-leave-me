@@ -5779,7 +5779,7 @@ PrefabInstance:
     - target: {fileID: 320548926218801290, guid: 68ba85b6aa78ee44bb2b8524947467d6,
         type: 3}
       propertyPath: successorScene
-      value: Level_04B
+      value: Level_04A
       objectReference: {fileID: 0}
     - target: {fileID: 320548926218801290, guid: 68ba85b6aa78ee44bb2b8524947467d6,
         type: 3}
@@ -7544,7 +7544,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2100000001}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1d7e4ac3b5ea4f8aa7a37a2dd76190bf, type: 3}
   m_Name: 
