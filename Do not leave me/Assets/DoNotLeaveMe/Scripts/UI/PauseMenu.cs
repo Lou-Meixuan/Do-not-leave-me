@@ -74,7 +74,7 @@ public class PauseMenu : MonoBehaviour
     {
         // 开局玩法介绍开着的时候，ESC 归它管（它自己会翻页/跳过），
         // 否则一按 ESC 会同时弹出暂停菜单，两层叠在一起。
-        if (TutorialPopup.IsShowing || DeathScreen.IsShowing)
+        if (TutorialPopup.IsShowing || DeathScreen.IsShowing || ReadingArchiveController.IsShowing)
             return;
 
         if (Input.GetKeyDown(KeyCode.Escape))

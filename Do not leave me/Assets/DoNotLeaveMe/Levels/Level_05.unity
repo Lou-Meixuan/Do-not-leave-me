@@ -2090,6 +2090,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   readRadius: 3
   heightTolerance: 3
+  archiveEntryId: story.level_05.01
   humanPages:
   - {fileID: 21300000, guid: bf64386cb9eac9947a5102da2f3e6d52, type: 3}
   - {fileID: 21300000, guid: 094988afe23b6d444875efdca4ffc5d3, type: 3}
@@ -2357,6 +2358,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   readRadius: 3.5
   heightTolerance: 3
+  archiveEntryId: story.level_05.02
   humanPages:
   - {fileID: 21300000, guid: be4429e5af91dba4287ae579f6db676d, type: 3}
   - {fileID: 21300000, guid: 975c990277efa1f40bf9129dc4ebe5e3, type: 3}
@@ -3209,6 +3211,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   readRadius: 4.5
   heightTolerance: 3
+  archiveEntryId: story.level_05.03
   humanPages:
   - {fileID: 21300000, guid: da510166c0da73c40bfd79a63d88116e, type: 3}
   dogPages:
@@ -3477,6 +3480,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   readRadius: 3
   heightTolerance: 3
+  archiveEntryId: story.level_05.04
   humanPages:
   - {fileID: 21300000, guid: d1a30350be6a7af46aef05b3e8a5160d, type: 3}
   dogPages:
