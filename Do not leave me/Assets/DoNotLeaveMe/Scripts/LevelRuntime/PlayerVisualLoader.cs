@@ -9,10 +9,13 @@ public class PlayerVisualLoader : MonoBehaviour
     [SerializeField] private Vector3 humanVisualOffset;
     [SerializeField] private Vector3 dogVisualOffset;
 
+    // 注意：这两个字符串是【场景里子物体的名字】，不是预制体资产名。
+    // PlayerActors.prefab 里嵌的 Visual 实例就叫 FormalHumanVisual / FormalDogVisual，
+    // 改这里必须同时改 PlayerActors.prefab 里的 m_Name 覆盖，否则会重复生成一份。
     void Awake()
     {
-        LoadVisual(human, humanVisualPrefab, "HumanVisual", humanVisualOffset);
-        LoadVisual(dog, dogVisualPrefab, "DogVisual", dogVisualOffset);
+        LoadVisual(human, humanVisualPrefab, "FormalHumanVisual", humanVisualOffset);
+        LoadVisual(dog, dogVisualPrefab, "FormalDogVisual", dogVisualOffset);
     }
 
     static void LoadVisual(PlayerActor player, GameObject prefab, string instanceName, Vector3 offset)
