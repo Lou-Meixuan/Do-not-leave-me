@@ -41,6 +41,10 @@ After normalization, the chase releases into a short guided walk and displays `æ
 
 Level 04A initially targets `Level_04B`. The exit door/trigger stores the target as serialized scene data so a future room can replace Level 04B without changing parkour code.
 
+### D6. Reuse the Level 04B corridor visual module
+
+Each Level 04A straight tiles the clean Level 04B floor and wall prefabs as its visual shell while retaining separate parkour lane and obstacle colliders. Visual-prefab colliders are disabled; the builder aligns fixed-size tiles along each authored segment instead of stretching the complete `L04B_Content` room assembly. Main straights use twice the previous authored length so obstacle reading and chase pacing have more room.
+
 ## Risks / Trade-offs
 
 - Additive route loading may expose a lighting flash -> keep the entire normalization zone unlit and hold the black presentation until actor placement is complete.

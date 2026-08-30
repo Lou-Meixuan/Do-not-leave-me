@@ -22,6 +22,15 @@ Level 04A SHALL contain the working three-lane chase, obstacle, dog, pressure, a
 - **THEN** that choice enters its own dark approach
 - **AND** neither choice is treated as failure
 
+### Requirement: Level 04A reuses the Level 04B corridor language
+
+Each main parkour straight SHALL use the Level 04B corridor model as its visual shell and SHALL be approximately twice the length of the initial Level 04A prototype straight.
+
+#### Scenario: Builder regenerates Level 04A
+- **WHEN** the Level 04A parkour builder runs
+- **THEN** every main straight receives an aligned Level 04B corridor visual instance
+- **AND** lane, obstacle, and dog-path gameplay data remain authored independently from that visual model
+
 ### Requirement: Darkness conceals shared-corridor normalization
 
 Both final approaches SHALL become visually unreadable before the actors are normalized to one shared exit corridor, and the authored map SHALL NOT expose a physical Y-shaped merge.

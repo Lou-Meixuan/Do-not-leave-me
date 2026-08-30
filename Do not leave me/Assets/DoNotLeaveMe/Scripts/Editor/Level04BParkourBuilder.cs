@@ -11,6 +11,8 @@ public static class Level04AParkourBuilder
     const string OldScenePath = "Assets/DoNotLeaveMe/Levels/Level_04B.unity";
     const string RootName = "L04A_ParkourRoot";
     const string OldRootName = "L04B_ParkourRoot";
+    const string CorridorFloorPath = "Assets/DoNotLeaveMe/Levels/Prefabs/SharedModels/SharedArt_L04B_L05_floor_tile_blue (14).prefab";
+    const string CorridorWallPath = "Assets/DoNotLeaveMe/Levels/Prefabs/SharedModels/SharedArt_L04B_L05_wall_tile (27).prefab";
 
     [MenuItem("Tools/DoNotLeaveMe/Level 04A/Migrate and Build Parkour")]
     public static void Build()
@@ -39,11 +41,11 @@ public static class Level04AParkourBuilder
 
         Vector3[] points =
         {
-            mergePosition - forward * 42f - right * 36f,
-            mergePosition - forward * 42f - right * 18f,
-            mergePosition - forward * 24f - right * 18f,
-            mergePosition - forward * 24f,
-            mergePosition - forward * 10f,
+            mergePosition - forward * 84f - right * 72f,
+            mergePosition - forward * 84f - right * 36f,
+            mergePosition - forward * 48f - right * 36f,
+            mergePosition - forward * 48f,
+            mergePosition - forward * 20f,
         };
 
         List<Transform> humanMarkers = new List<Transform>();
@@ -73,6 +75,7 @@ public static class Level04AParkourBuilder
                 finalJunction = final
             };
             BuildCorridor(root.transform, points[i], points[i + 1], 6.6f);
+            BuildCorridorModel(root.transform, points[i], points[i + 1], i + 1);
         }
 
         Transform merge = Marker(routeRoot, "LongCorridorEntry", mergePosition, forward);
@@ -345,6 +348,85 @@ public static class Level04AParkourBuilder
             new Vector3(0.3f, 3.5f, length), rotation, true);
         CreateCube(parent, "WallRight", center + right * (width * 0.5f + 0.15f) + Vector3.up * 1.6f,
             new Vector3(0.3f, 3.5f, length), rotation, true);
+    }
+
+    static void BuildCorridorModel(Transform parent, Vector3 start, Vector3 end, int index)
+    {
+        GameObject floorSource = AssetDatabase.LoadAssetAtPath<GameObject>(CorridorFloorPath);
+        GameObject wallSource = AssetDatabase.LoadAssetAtPath<GameObject>(CorridorWallPath);
+        if (floorSource == null || wallSource == null)
+        {
+            Debug.LogWarning("[Level04AParkourBuilder] L04B floor/wall modules were not found; using placeholder geometry.");
+            return;
+        }
+
+        GameObject wrapper = new GameObject("L04B_CorridorModel_" + index);
+        wrapper.transform.SetParent(parent);
+        Vector3 direction = (end - start).normalized;
+        Vector3 right = Vector3.Cross(Vector3.up, direction).normalized;
+        float length = Vector3.Distance(start, end);
+        const float tileLength = 4f;
+        int tileCount = Mathf.Max(1, Mathf.CeilToInt(length / tileLength));
+        float actualTileLength = length / tileCount;
+        Quaternion rotation = Quaternion.LookRotation(direction, Vector3.up);
+
+        for (int tileIndex = 0; tileIndex < tileCount; tileIndex++)
+        {
+            float distance = (tileIndex + 0.5f) * actualTileLength;
+            Vector3 center = start + direction * distance;
+            CreateFittedVisual(floorSource, wrapper.transform, "FloorTile_" + tileIndex,
+                center, rotation, new Vector3(6.55f, 0.08f, actualTileLength + 0.04f));
+            CreateFittedVisual(wallSource, wrapper.transform, "WallLeft_" + tileIndex,
+                center - right * 3.32f + Vector3.up * 1.6f, rotation,
+                new Vector3(0.12f, 3.3f, actualTileLength + 0.04f));
+            CreateFittedVisual(wallSource, wrapper.transform, "WallRight_" + tileIndex,
+                center + right * 3.32f + Vector3.up * 1.6f, rotation,
+                new Vector3(0.12f, 3.3f, actualTileLength + 0.04f));
+        }
+    }
+
+    static void CreateFittedVisual(GameObject source, Transform parent, string name,
+        Vector3 position, Quaternion rotation, Vector3 targetSize)
+    {
+        GameObject visualRoot = new GameObject(name);
+        visualRoot.transform.SetParent(parent);
+        GameObject model = PrefabUtility.InstantiatePrefab(source) as GameObject;
+        if (model == null)
+        {
+            Object.DestroyImmediate(visualRoot);
+            return;
+        }
+        model.transform.SetParent(visualRoot.transform, true);
+        foreach (Collider collider in model.GetComponentsInChildren<Collider>(true))
+            collider.enabled = false;
+        foreach (Rigidbody body in model.GetComponentsInChildren<Rigidbody>(true))
+            body.isKinematic = true;
+
+        Renderer[] renderers = model.GetComponentsInChildren<Renderer>(true);
+        Bounds bounds = default;
+        bool hasBounds = false;
+        foreach (Renderer renderer in renderers)
+        {
+            if (!hasBounds)
+            {
+                bounds = renderer.bounds;
+                hasBounds = true;
+            }
+            else
+                bounds.Encapsulate(renderer.bounds);
+        }
+        if (!hasBounds)
+        {
+            Object.DestroyImmediate(visualRoot);
+            return;
+        }
+
+        model.transform.position -= bounds.center;
+        visualRoot.transform.SetPositionAndRotation(position, rotation);
+        visualRoot.transform.localScale = new Vector3(
+            targetSize.x / Mathf.Max(0.01f, bounds.size.x),
+            targetSize.y / Mathf.Max(0.01f, bounds.size.y),
+            targetSize.z / Mathf.Max(0.01f, bounds.size.z));
     }
 
     static void BuildObstacle(Transform parent, string name, Vector3 center, int lane, Vector3 forward, bool jumpable)

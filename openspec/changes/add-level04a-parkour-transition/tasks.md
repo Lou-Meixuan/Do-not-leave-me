@@ -9,6 +9,7 @@
 - [x] 2.1 Retarget the parkour builder to Level 04A and rename its generated root and editor menu without changing established movement controls.
 - [x] 2.2 Generate the four-to-six-turn chase, obstacles, dog path, camera, and final left/right choice in Level 04A.
 - [x] 2.3 Remove only the generated parkour root from Level 04B and verify its original serialized objects remain intact.
+- [x] 2.4 Tile Level 04B floor/wall visual modules with disabled visual colliders along every doubled-length Level 04A straight.
 
 ## 3. Dark transition corridor
 
