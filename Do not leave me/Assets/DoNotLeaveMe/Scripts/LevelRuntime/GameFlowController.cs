@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -35,6 +36,17 @@ public class GameFlowController : MonoBehaviour
     [Tooltip("通关之后在屏幕中间画一个带 Restart 按钮的调试面板。正式版关掉")]
     [SerializeField] private bool showRouteCompleteDebugPanel;
 
+    [Header("Cheat Panel")]
+    [Tooltip("开启后才响应小键盘 8/2/1/3，并允许显示运行时作弊面板。")]
+    [SerializeField] private bool enableCheatPanel;
+    [Tooltip("启用作弊功能时，进入 Play Mode 后是否默认显示面板。小键盘 3 可随时显示或隐藏。")]
+    [SerializeField] private bool showCheatPanelOnStart = true;
+    [SerializeField] private KeyCode nextLevelCheatKey = KeyCode.Keypad8;
+    [SerializeField] private KeyCode previousLevelCheatKey = KeyCode.Keypad2;
+    [SerializeField] private KeyCode dogSpeedCheatKey = KeyCode.Keypad1;
+    [SerializeField] private KeyCode toggleCheatPanelKey = KeyCode.Keypad3;
+    [SerializeField, Min(1f)] private float acceleratedDogSpeedMultiplier = 5f;
+
     // Kept as serialized migration inputs for existing Persistent scenes.
     [SerializeField] private string level01Level02SharedArtScene = "SharedArt_L01_L02";
     [SerializeField] private string level02Level03SharedArtScene = "SharedArt_L02_L03";
@@ -58,12 +70,15 @@ public class GameFlowController : MonoBehaviour
     private string pendingPhysicalTransitionToScene;
     private string retainedPhysicalPredecessorScene;
     private bool retainedPredecessorReleasedAtLevel05Checkpoint;
+    private bool cheatPanelVisible;
 
     public string CurrentLevelScene => currentLevelScene;
     public IReadOnlyList<RouteEntry> RouteCatalog => routeCatalog;
     public bool IsRouteComplete => routeComplete;
     public bool SuccessorArrivalConfirmed => successorArrivalConfirmed;
     public bool HasPendingPhysicalTransition => !string.IsNullOrEmpty(pendingPhysicalTransitionToScene);
+    public bool CheatsEnabled => enableCheatPanel;
+    public bool IsCheatPanelVisible => enableCheatPanel && cheatPanelVisible;
 
     private static GameFlowController activeInstance;
 
@@ -97,8 +112,142 @@ public class GameFlowController : MonoBehaviour
 
     void Start()
     {
+        cheatPanelVisible = enableCheatPanel && showCheatPanelOnStart;
+
         if (!string.IsNullOrEmpty(initialLevelScene))
             LoadLevelAsync(initialLevelScene, null);
+    }
+
+    void Update()
+    {
+        if (!enableCheatPanel)
+        {
+            cheatPanelVisible = false;
+            return;
+        }
+
+        if (Input.GetKeyDown(toggleCheatPanelKey))
+            cheatPanelVisible = !cheatPanelVisible;
+
+        if (Input.GetKeyDown(nextLevelCheatKey))
+            GoToNextLevel();
+        else if (Input.GetKeyDown(previousLevelCheatKey))
+            GoToPreviousLevel();
+
+        if (Input.GetKeyDown(dogSpeedCheatKey))
+            ToggleDogSpeedCheat();
+    }
+
+    public void SetCheatsEnabled(bool enabled)
+    {
+        enableCheatPanel = enabled;
+        if (!enabled)
+            cheatPanelVisible = false;
+    }
+
+    public void ToggleDogSpeedCheat()
+    {
+        if (!enableCheatPanel)
+            return;
+
+        PlayerActor dog = PlayerActors.Instance != null ? PlayerActors.Instance.Dog : FindDogActor();
+        if (dog == null)
+        {
+            Debug.LogWarning("[CheatPanel] 找不到狗角色，无法切换速度。", this);
+            return;
+        }
+
+        float target = dog.RuntimeMovementSpeedMultiplier > 1f
+            ? 1f
+            : Mathf.Max(1f, acceleratedDogSpeedMultiplier);
+        dog.SetRuntimeMovementSpeedMultiplier(target);
+        Debug.Log($"[CheatPanel] 狗速度已切换为 {target:0.#}x。", dog);
+    }
+
+    static PlayerActor FindDogActor()
+    {
+        PlayerActor[] actors = FindObjectsOfType<PlayerActor>();
+        foreach (PlayerActor actor in actors)
+            if (actor.Role == PlayerActor.ActorRole.Dog)
+                return actor;
+
+        return null;
+    }
+
+    void OnGUI()
+    {
+        if (enableCheatPanel && cheatPanelVisible)
+            DrawCheatPanel();
+
+        DrawRouteCompleteDebugPanel();
+    }
+
+    void DrawCheatPanel()
+    {
+        const float width = 420f;
+        GUILayout.BeginArea(new Rect(16f, 16f, width, Screen.height - 32f), GUI.skin.box);
+        GUILayout.Label("CHEAT PANEL");
+        GUILayout.Label("[Num 8] 下一关   [Num 2] 上一关");
+        GUILayout.Label("[Num 1] 狗速 1x/5x   [Num 3] 隐藏面板");
+        GUILayout.Space(6f);
+        GUILayout.Label("当前关卡: " + (string.IsNullOrEmpty(currentLevelScene) ? "加载中" : currentLevelScene));
+
+        PlayerActor dog = PlayerActors.Instance != null ? PlayerActors.Instance.Dog : FindDogActor();
+        GUILayout.Label("狗速倍率: " + (dog != null ? dog.RuntimeMovementSpeedMultiplier.ToString("0.#") + "x" : "狗角色未找到"));
+
+        GUILayout.Space(8f);
+        GUILayout.Label(BuildLevel02GateStatus());
+        GUILayout.EndArea();
+    }
+
+    string BuildLevel02GateStatus()
+    {
+        if (currentLevelScene != "Level_02")
+            return "Level 02 闸门: 当前不在第二关";
+
+        DoorInteraction interaction = FindLevel02DoorInteraction();
+        if (interaction == null)
+            return "Level 02 闸门: 找不到 DoorInteraction";
+
+        StringBuilder status = new StringBuilder("Level 02 闸门状态\n");
+        IReadOnlyList<MonoBehaviour> prerequisites = interaction.Prerequisites;
+        if (prerequisites == null || prerequisites.Count == 0)
+        {
+            status.Append("- 前置条件: 未配置\n");
+        }
+        else
+        {
+            foreach (MonoBehaviour prerequisite in prerequisites)
+            {
+                if (prerequisite == null)
+                {
+                    status.Append("- 前置条件: 引用丢失\n");
+                    continue;
+                }
+
+                ILevelPermanentState state = prerequisite as ILevelPermanentState;
+                status.Append("- ").Append(prerequisite.name).Append(": ")
+                    .Append(state != null && state.IsComplete ? "完成" : "未完成").Append('\n');
+            }
+        }
+
+        status.Append("- 人在 E 交互区: ").Append(interaction.HasEligibleOccupant ? "是" : "否").Append('\n');
+        status.Append("- 目标门: ").Append(interaction.TargetDoor != null ? "已找到" : "未找到").Append('\n');
+        status.Append("- 可开门: ")
+            .Append(interaction.ArePrerequisitesComplete && interaction.HasEligibleOccupant && interaction.TargetDoor != null
+                ? "是（按 E）"
+                : "否");
+        return status.ToString();
+    }
+
+    static DoorInteraction FindLevel02DoorInteraction()
+    {
+        DoorInteraction[] interactions = FindObjectsOfType<DoorInteraction>();
+        foreach (DoorInteraction interaction in interactions)
+            if (interaction.gameObject.scene.name == "Level_02")
+                return interaction;
+
+        return null;
     }
 
     public void RequestRouteAdvance()
@@ -1254,7 +1403,7 @@ public class GameFlowController : MonoBehaviour
         return result.ToArray();
     }
 
-    void OnGUI()
+    void DrawRouteCompleteDebugPanel()
     {
         if (!routeComplete || !showRouteCompleteDebugPanel)
             return;

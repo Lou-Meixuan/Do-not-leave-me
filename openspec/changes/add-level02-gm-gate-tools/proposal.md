@@ -4,15 +4,15 @@ Level 2's cooperative door must be tested quickly and its missing prerequisite m
 
 ## What Changes
 
-- Add a GM diagnostic command that reports the current Level 2 door-gate status and every missing prerequisite.
-- Add a GM command on keypad 7 that toggles the dog's walk speed between its normal value and five times that value.
+- Add an optional runtime cheat panel that reports the current route level, dog-speed multiplier, and Level 2 door-gate status.
+- While cheats are enabled, use keypad 8/2 to move to the next/previous route level, keypad 1 to toggle dog speed, and keypad 3 to show or hide the panel.
 - Keep the commands scoped to runtime testing and avoid changing the intended cooperative door rules.
 
 ## Capabilities
 
 ### New Capabilities
 
-- `formal-level02-gm-gate-tools`: Provides runtime GM visibility into the L2 cooperative door gate and a dog-speed testing toggle.
+- `formal-level02-gm-gate-tools`: Provides an optional runtime cheat panel, route navigation, L2 gate visibility, and a dog-speed testing toggle.
 
 ### Modified Capabilities
 
@@ -20,4 +20,4 @@ Level 2's cooperative door must be tested quickly and its missing prerequisite m
 
 ## Impact
 
-- Formal player movement runtime and Level 2 cooperative door interaction diagnostics.
+- Formal route flow, player movement runtime, and Level 2 cooperative door interaction diagnostics.
