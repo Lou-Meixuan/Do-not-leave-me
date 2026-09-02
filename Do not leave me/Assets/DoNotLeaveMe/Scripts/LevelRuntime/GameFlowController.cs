@@ -71,6 +71,11 @@ public class GameFlowController : MonoBehaviour
     private string retainedPhysicalPredecessorScene;
     private bool retainedPredecessorReleasedAtLevel05Checkpoint;
     private bool cheatPanelVisible;
+    private float nextCheatPanelRefreshTime;
+    private string cachedCheatPanelStatus = "状态加载中";
+    private DoorInteraction cachedLevel02DoorInteraction;
+
+    private const float CheatPanelRefreshInterval = 0.25f;
 
     public string CurrentLevelScene => currentLevelScene;
     public IReadOnlyList<RouteEntry> RouteCatalog => routeCatalog;
@@ -127,7 +132,10 @@ public class GameFlowController : MonoBehaviour
         }
 
         if (Input.GetKeyDown(toggleCheatPanelKey))
+        {
             cheatPanelVisible = !cheatPanelVisible;
+            nextCheatPanelRefreshTime = 0f;
+        }
 
         if (Input.GetKeyDown(nextLevelCheatKey))
             GoToNextLevel();
@@ -136,6 +144,12 @@ public class GameFlowController : MonoBehaviour
 
         if (Input.GetKeyDown(dogSpeedCheatKey))
             ToggleDogSpeedCheat();
+
+        if (cheatPanelVisible && Time.unscaledTime >= nextCheatPanelRefreshTime)
+        {
+            RefreshCheatPanelStatus();
+            nextCheatPanelRefreshTime = Time.unscaledTime + CheatPanelRefreshInterval;
+        }
     }
 
     public void SetCheatsEnabled(bool enabled)
@@ -161,6 +175,7 @@ public class GameFlowController : MonoBehaviour
             ? 1f
             : Mathf.Max(1f, acceleratedDogSpeedMultiplier);
         dog.SetRuntimeMovementSpeedMultiplier(target);
+        nextCheatPanelRefreshTime = 0f;
         Debug.Log($"[CheatPanel] 狗速度已切换为 {target:0.#}x。", dog);
     }
 
@@ -190,26 +205,38 @@ public class GameFlowController : MonoBehaviour
         GUILayout.Label("[Num 8] 下一关   [Num 2] 上一关");
         GUILayout.Label("[Num 1] 狗速 1x/5x   [Num 3] 隐藏面板");
         GUILayout.Space(6f);
-        GUILayout.Label("当前关卡: " + (string.IsNullOrEmpty(currentLevelScene) ? "加载中" : currentLevelScene));
-
-        PlayerActor dog = PlayerActors.Instance != null ? PlayerActors.Instance.Dog : FindDogActor();
-        GUILayout.Label("狗速倍率: " + (dog != null ? dog.RuntimeMovementSpeedMultiplier.ToString("0.#") + "x" : "狗角色未找到"));
-
-        GUILayout.Space(8f);
-        GUILayout.Label(BuildLevel02GateStatus());
+        GUILayout.Label(cachedCheatPanelStatus);
         GUILayout.EndArea();
     }
 
-    string BuildLevel02GateStatus()
+    void RefreshCheatPanelStatus()
     {
+        StringBuilder status = new StringBuilder();
+        status.Append("当前关卡: ")
+            .Append(string.IsNullOrEmpty(currentLevelScene) ? "加载中" : currentLevelScene)
+            .Append('\n');
+
+        PlayerActor dog = PlayerActors.Instance != null ? PlayerActors.Instance.Dog : FindDogActor();
+        status.Append("狗速倍率: ")
+            .Append(dog != null ? dog.RuntimeMovementSpeedMultiplier.ToString("0.#") + "x" : "狗角色未找到")
+            .Append("\n\n");
+
         if (currentLevelScene != "Level_02")
-            return "Level 02 闸门: 当前不在第二关";
+        {
+            status.Append("Level 02 闸门: 当前不在第二关");
+            cachedCheatPanelStatus = status.ToString();
+            return;
+        }
 
         DoorInteraction interaction = FindLevel02DoorInteraction();
         if (interaction == null)
-            return "Level 02 闸门: 找不到 DoorInteraction";
+        {
+            status.Append("Level 02 闸门: 找不到 DoorInteraction");
+            cachedCheatPanelStatus = status.ToString();
+            return;
+        }
 
-        StringBuilder status = new StringBuilder("Level 02 闸门状态\n");
+        status.Append("Level 02 闸门状态\n");
         IReadOnlyList<MonoBehaviour> prerequisites = interaction.Prerequisites;
         if (prerequisites == null || prerequisites.Count == 0)
         {
@@ -237,15 +264,22 @@ public class GameFlowController : MonoBehaviour
             .Append(interaction.ArePrerequisitesComplete && interaction.HasEligibleOccupant && interaction.TargetDoor != null
                 ? "是（按 E）"
                 : "否");
-        return status.ToString();
+        cachedCheatPanelStatus = status.ToString();
     }
 
-    static DoorInteraction FindLevel02DoorInteraction()
+    DoorInteraction FindLevel02DoorInteraction()
     {
+        if (cachedLevel02DoorInteraction != null &&
+            cachedLevel02DoorInteraction.gameObject.scene.name == "Level_02")
+            return cachedLevel02DoorInteraction;
+
         DoorInteraction[] interactions = FindObjectsOfType<DoorInteraction>();
         foreach (DoorInteraction interaction in interactions)
             if (interaction.gameObject.scene.name == "Level_02")
-                return interaction;
+            {
+                cachedLevel02DoorInteraction = interaction;
+                return cachedLevel02DoorInteraction;
+            }
 
         return null;
     }
