@@ -205,9 +205,7 @@ public class PlayerControl : MonoBehaviour
         humanOnly = forced;
         if (!forced)
         {
-            DogOrbitFollower follower = dog != null ? dog.GetComponent<DogOrbitFollower>() : null;
-            if (follower != null)
-                follower.StopOrbit();
+            CancelForcedDogFollow();
             ApplyPhysicsOwnership();
             return;
         }
@@ -229,6 +227,13 @@ public class PlayerControl : MonoBehaviour
         SetCameraTarget();
         if (ActiveRoleChanged != null)
             ActiveRoleChanged(false);
+    }
+
+    public void CancelForcedDogFollow()
+    {
+        DogOrbitFollower follower = dog != null ? dog.GetComponent<DogOrbitFollower>() : null;
+        if (follower != null)
+            follower.StopOrbit();
     }
 
     public void AcquireParkourControl()

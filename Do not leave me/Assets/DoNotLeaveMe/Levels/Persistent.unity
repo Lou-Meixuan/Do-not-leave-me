@@ -1713,7 +1713,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 58e9393a17fd2584faea47c9e908efec, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  initialLevelScene: Level_03
+  initialLevelScene: Level_01
   routeCatalog:
   - levelId: Level01
     sceneName: Level_01
@@ -1758,6 +1758,13 @@ MonoBehaviour:
   endingDelaySeconds: 0.6
   endingFadeSeconds: 1.2
   showRouteCompleteDebugPanel: 0
+  enableCheatPanel: 1
+  showCheatPanelOnStart: 1
+  nextLevelCheatKey: 264
+  previousLevelCheatKey: 258
+  dogSpeedCheatKey: 257
+  toggleCheatPanelKey: 259
+  acceleratedDogSpeedMultiplier: 5
   level01Level02SharedArtScene: SharedArt_L01_L02
   level02Level03SharedArtScene: SharedArt_L02_L03
   level03Level04SharedArtScene: SharedArt_L03_L04

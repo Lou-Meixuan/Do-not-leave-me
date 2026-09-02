@@ -458,7 +458,10 @@ public class GameFlowController : MonoBehaviour
         successorArrivalConfirmed = true;
         SceneManager.SetActiveScene(level05);
         foreach (PlayerControl control in FindObjectsOfType<PlayerControl>())
+        {
+            control.CancelForcedDogFollow();
             control.ForceHumanOnly(false);
+        }
         retainedPhysicalPredecessorScene = null;
         retainedPredecessorReleasedAtLevel05Checkpoint = true;
         StartCoroutine(UnloadRetainedPredecessorAtLevel05Checkpoint(retainedSceneName));
