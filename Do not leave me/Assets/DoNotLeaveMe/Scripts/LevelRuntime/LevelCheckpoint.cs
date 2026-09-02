@@ -9,6 +9,11 @@ public class LevelCheckpoint : MonoBehaviour, ILevelPermanentState
     [SerializeField] private Transform dogRespawnAnchor;
     [SerializeField] private MechanismState[] prerequisites;
     [SerializeField] private bool successorRegistrationPoint;
+    [Header("双角色确认")]
+    [Tooltip("勾上后，必须人和狗同时站在这个存档点的触发范围内才完成。")]
+    [SerializeField] private bool requireBothActors;
+    [Tooltip("完成后提交当前预加载的实体过门流程。只给 L05_Checkpoint 使用。")]
+    [SerializeField] private bool commitPhysicalArrivalOnComplete;
     [Tooltip("过关存档点：踩到时把没跟上来的那一个直接拽到门口。\n" +
              "默认关闭——现在靠新关卡入口的 LevelEntrySeal 来要求玩家自己把同伴带进来，" +
              "自动传送会让那个设计失去意义。只在某一关想放宽时才勾。")]
@@ -27,12 +32,16 @@ public class LevelCheckpoint : MonoBehaviour, ILevelPermanentState
 
     private static readonly HashSet<LevelCheckpoint> RegisteredCheckpoints =
         new HashSet<LevelCheckpoint>();
+    private readonly Dictionary<Collider, PlayerActor> actorsInside = new Dictionary<Collider, PlayerActor>();
     private bool registeredWithOwningLevel;
     private bool warnedMissingCheckpointEvent;
+    private bool physicalArrivalConfirmed;
+    private bool physicalSealRequested;
 
     public bool IsComplete { get; private set; }
     public string OwningLevelScene => owningLevelScene;
     public bool IsRegisteredWithOwningLevel => registeredWithOwningLevel;
+    public bool HasRequiredActorsInside => !requireBothActors || HasBothActorRoles(actorsInside.Values);
 
     void Awake()
     {
@@ -44,6 +53,17 @@ public class LevelCheckpoint : MonoBehaviour, ILevelPermanentState
     {
         if (!registeredWithOwningLevel)
             RegisterWithOwningLevel();
+    }
+
+    void Update()
+    {
+        if (IsComplete && commitPhysicalArrivalOnComplete && !physicalSealRequested)
+            TryCommitPhysicalArrival();
+    }
+
+    void OnDisable()
+    {
+        actorsInside.Clear();
     }
 
     void OnDestroy()
@@ -120,8 +140,16 @@ public class LevelCheckpoint : MonoBehaviour, ILevelPermanentState
             return;
 
         PlayerActor trigger = LevelActors.ResolvePlayer(other);
+        if (trigger == null)
+            return;
+
+        actorsInside[other] = trigger;
+        if (!HasRequiredActorsInside)
+            return;
 
         ActivateCheckpoint();
+        if (!IsComplete)
+            return;
 
         // 存档地毯介绍：只在勾了的那个存档点弹，而且全流程只弹一次
         if (IsComplete && showSaveAreaTutorial && TutorialPopup.Instance != null)
@@ -139,6 +167,12 @@ public class LevelCheckpoint : MonoBehaviour, ILevelPermanentState
         if (flow == null)
             return;
 
+        if (commitPhysicalArrivalOnComplete)
+        {
+            TryCommitPhysicalArrival(flow);
+            return;
+        }
+
         flow.NotifyCheckpointActivated(gameObject.scene.name);
 
         if (!successorRegistrationPoint)
@@ -150,6 +184,52 @@ public class LevelCheckpoint : MonoBehaviour, ILevelPermanentState
             BringPartnerAlong(trigger);
 
         flow.NotifySuccessorCheckpointActivated(gameObject.scene.name);
+    }
+
+    void OnTriggerExit(Collider other)
+    {
+        if (IsComplete)
+            return;
+
+        actorsInside.Remove(other);
+    }
+
+    void TryCommitPhysicalArrival(GameFlowController flow = null)
+    {
+        if (physicalSealRequested)
+            return;
+
+        if (flow == null)
+            flow = FindObjectOfType<GameFlowController>();
+        if (flow == null)
+            return;
+
+        if (!physicalArrivalConfirmed)
+        {
+            if (!flow.ConfirmPreloadedPhysicalArrival(gameObject.scene.name, this))
+                return;
+            physicalArrivalConfirmed = true;
+        }
+
+        physicalSealRequested = flow.SealPredecessorLevel(true, true);
+    }
+
+    public static bool HasBothActorRoles(IEnumerable<PlayerActor> actors)
+    {
+        bool hasHuman = false;
+        bool hasDog = false;
+        if (actors == null)
+            return false;
+
+        foreach (PlayerActor actor in actors)
+        {
+            if (actor == null)
+                continue;
+            hasHuman |= actor.Role == PlayerActor.ActorRole.Human;
+            hasDog |= actor.Role == PlayerActor.ActorRole.Dog;
+        }
+
+        return hasHuman && hasDog;
     }
 
     /// <summary>把没触发存档点的那个角色传送到它自己的锚点上。</summary>
