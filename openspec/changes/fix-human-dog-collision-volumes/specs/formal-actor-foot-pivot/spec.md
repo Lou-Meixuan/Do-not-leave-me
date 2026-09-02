@@ -22,6 +22,8 @@ The Formal human and dog SHALL resolve solid physics contact during ordinary gam
 
 The shared actor setup SHALL NOT globally ignore the human/dog collider pair. Automated dog following SHALL apply movement through the dog's Rigidbody physics path rather than directly writing its Transform position.
 
+During ordinary single-actor control, the inactive partner SHALL retain solid collision but SHALL NOT receive collision momentum that makes it slide away. Switching the active actor SHALL transfer dynamic physics control to the newly active actor. Scripted phases that move both actors MAY temporarily keep both actors dynamic.
+
 #### Scenario: One actor approaches a stationary partner
 
 - **WHEN** either actor moves into the stationary other actor from the front, side, or rear at configured gameplay speed
@@ -33,6 +35,17 @@ The shared actor setup SHALL NOT globally ignore the human/dog collider pair. Au
 - **WHEN** the human and dog move toward each other at configured gameplay speeds
 - **THEN** Unity resolves their contact without visible core-body overlap
 - **AND** both actors can move apart normally afterward
+
+#### Scenario: Active actor contacts inactive partner
+
+- **WHEN** the player moves the active actor into the inactive partner during ordinary control
+- **THEN** the inactive partner blocks overlap without sliding away from collision momentum
+
+#### Scenario: Switch active actor
+
+- **WHEN** the player switches control from one actor to the other
+- **THEN** the newly active actor becomes dynamically movable
+- **AND** the previously active actor becomes a solid non-pushable partner
 
 ### Requirement: Effective collider audit
 

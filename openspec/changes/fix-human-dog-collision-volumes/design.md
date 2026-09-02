@@ -37,6 +37,12 @@ No new actor layers or collision-matrix edits are required. `PlayerActors.Awake`
 
 `DogOrbitFollower` may continue calculating orbit/path targets in `Update`, but applies movement during `FixedUpdate` through `PlayerActor.Move`. This preserves its speed multiplier while allowing the rigidbody solver to resolve contact with the human and environment. Direct Transform position writes are prohibited for ordinary follow movement.
 
+### Give dynamics only to controlled actors
+
+During ordinary player switching, the active actor remains a dynamic Rigidbody and the inactive partner becomes kinematic. The kinematic partner retains its non-trigger collider and therefore blocks overlap, but cannot receive momentum and slide away. `PlayerControl` owns this state transition so Tab switching cannot leave both actors in the wrong mode.
+
+Scripted phases that intentionally drive both actors (`ForceHumanOnly` dog following and parkour control) keep both rigidbodies dynamic. Returning to ordinary control reapplies the single-active ownership rule. `PlayerActor` avoids velocity writes while kinematic so checkpoint placement and stop calls do not generate physics warnings.
+
 ### Improve the audit before final tuning
 
 `ActorBodyAudit` will report capsule orientation, effective bounds size/center, ground-bottom error, and model-versus-capsule gaps. This makes the scaled-child setup inspectable and gives later changes a repeatable regression check.
@@ -46,6 +52,7 @@ No new actor layers or collision-matrix edits are required. `PlayerActors.Awake`
 - Renderer bounds vary with animation pose; final values must be checked in more than one normal locomotion pose.
 - A capsule fitted to every limb would snag on geometry, while a capsule fitted only to the torso permits limited limb overlap. The target is readable gameplay contact, not pixel-perfect physical anatomy.
 - Tuning the shared prefab affects every Formal level, so verification must cover spawn/grounding and at least one constrained space in addition to direct human/dog contact.
+- A moving dynamic actor can still be blocked by the inactive kinematic partner; this is intentional. Level design must leave enough room for the active actor to move around the partner.
 
 ## Verification
 

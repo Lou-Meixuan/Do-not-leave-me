@@ -9,6 +9,9 @@
 - [x] 2.1 Remove the startup behavior that ignores the human/dog collider pair and explicitly restore their contact.
 - [x] 2.2 Route forced dog orbit movement through `PlayerActor.Move` during fixed physics updates instead of writing `transform.position`.
 - [x] 2.3 Restore the dog's configured runtime speed multiplier and stop its rigidbody when forced following ends.
+- [x] 2.4 Add explicit dynamic/kinematic physics ownership to `PlayerActor` without disabling its collider.
+- [x] 2.5 Transfer physics ownership on startup, Tab switching, forced-human mode, and parkour control transitions.
+- [x] 2.6 Avoid velocity writes while an actor is kinematic.
 
 ## 3. Make collision fit inspectable
 
@@ -26,5 +29,6 @@
 - [x] 5.1 Compile cleanly and check the Unity Console for new errors or physics warnings.
 - [ ] 5.2 Test human-to-dog, dog-to-human, and both-moving contact from front, side, and rear; confirm no pass-through, obvious overlap, launch, or persistent jitter.
 - [ ] 5.3 Confirm both actors remain grounded and can separate naturally after contact.
+- [ ] 5.3a Confirm the inactive partner blocks the active actor without sliding, and Tab switching transfers which actor can be pushed/moved.
 - [ ] 5.4 Smoke-test representative doors/corridors and existing spawn/checkpoint placement for clearance regressions.
 - [ ] 5.5 Re-run the audit and record the final effective dimensions and fit observations.
