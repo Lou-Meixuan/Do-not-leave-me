@@ -1531,7 +1531,7 @@ Transform:
   m_GameObject: {fileID: 771000030}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -238, y: 12.46, z: 1}
+  m_LocalPosition: {x: -208.6, y: 12.46, z: 1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3844,7 +3844,7 @@ MonoBehaviour:
   showLevelIntroTutorial: 0
   checkpointEvent:
     idInternal: 0
-    valueGuidInternal:
+    valueGuidInternal: 
     WwiseObjectReference: {fileID: 11400000, guid: d7eeb487231b4af0a37ac54bc6b63981,
       type: 2}
 --- !u!65 &2074326771
