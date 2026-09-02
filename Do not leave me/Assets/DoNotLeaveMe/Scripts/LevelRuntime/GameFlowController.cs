@@ -69,7 +69,6 @@ public class GameFlowController : MonoBehaviour
     private string pendingPhysicalTransitionFromScene;
     private string pendingPhysicalTransitionToScene;
     private string retainedPhysicalPredecessorScene;
-    private bool retainedPredecessorReleasedAtLevel05Checkpoint;
     private bool cheatPanelVisible;
 
     public string CurrentLevelScene => currentLevelScene;
@@ -328,6 +327,9 @@ public class GameFlowController : MonoBehaviour
         successorArrivalConfirmed = true;
         SceneManager.SetActiveScene(target);
 
+        if (arrivalScene == "Level_05")
+            ReleaseLevel05TemporaryControl();
+
         // L4.5 的检查点可能位于入口确认区之前。实体过门时，它会在本关
         // 成为当前关卡前先完成，无法再通知一次；因此以成功的到达确认作为
         // 追击序列的可靠起点。
@@ -336,6 +338,19 @@ public class GameFlowController : MonoBehaviour
 
         Debug.Log($"[GameFlowController] Physical arrival confirmed: {predecessor} -> {arrivalScene}.", source);
         return true;
+    }
+
+    void ReleaseLevel05TemporaryControl()
+    {
+        foreach (Level04BParkourController parkour in FindObjectsOfType<Level04BParkourController>())
+            parkour.ReleaseForLevelTransition();
+
+        foreach (PlayerControl control in FindObjectsOfType<PlayerControl>())
+        {
+            control.ForceReleaseParkourControl();
+            control.CancelForcedDogFollow();
+            control.ForceHumanOnly(false);
+        }
     }
 
     IEnumerator PreloadSuccessorRoutine(string originScene, string successorScene, bool openTransitionDoor)
@@ -375,7 +390,6 @@ public class GameFlowController : MonoBehaviour
         pendingPhysicalTransitionFromScene = null;
         pendingPhysicalTransitionToScene = null;
         retainedPhysicalPredecessorScene = null;
-        retainedPredecessorReleasedAtLevel05Checkpoint = false;
     }
 
     public void ReportTransitionDoorOpened(Door door)
@@ -426,9 +440,6 @@ public class GameFlowController : MonoBehaviour
         if (routeComplete)
             return;
 
-        if (ReleaseRetainedPredecessorAtLevel05Checkpoint(sceneName))
-            return;
-
         if (sceneName != currentLevelScene)
             return;
 
@@ -436,51 +447,6 @@ public class GameFlowController : MonoBehaviour
             return;
 
         BeginRetainedPredecessorPursuitSequence();
-    }
-
-    bool ReleaseRetainedPredecessorAtLevel05Checkpoint(string sceneName)
-    {
-        if (sceneName != "Level_05" || operationInProgress ||
-            pendingPhysicalTransitionToScene != sceneName ||
-            string.IsNullOrEmpty(retainedPhysicalPredecessorScene))
-            return false;
-
-        Scene level05 = SceneManager.GetSceneByName(sceneName);
-        if (!level05.isLoaded)
-            return false;
-
-        string predecessor = currentLevelScene;
-        string retainedSceneName = retainedPhysicalPredecessorScene;
-        pendingPhysicalTransitionFromScene = null;
-        pendingPhysicalTransitionToScene = null;
-        currentLevelScene = sceneName;
-        pendingUnloadScene = predecessor;
-        successorArrivalConfirmed = true;
-        SceneManager.SetActiveScene(level05);
-        foreach (PlayerControl control in FindObjectsOfType<PlayerControl>())
-        {
-            control.CancelForcedDogFollow();
-            control.ForceHumanOnly(false);
-        }
-        retainedPhysicalPredecessorScene = null;
-        retainedPredecessorReleasedAtLevel05Checkpoint = true;
-        StartCoroutine(UnloadRetainedPredecessorAtLevel05Checkpoint(retainedSceneName));
-        Debug.Log($"[L05RetainedCleanup] checkpoint committed: {predecessor} -> {sceneName}; no player placement.", this);
-        return true;
-    }
-
-    IEnumerator UnloadRetainedPredecessorAtLevel05Checkpoint(string retainedSceneName)
-    {
-        operationInProgress = true;
-
-        Scene retained = SceneManager.GetSceneByName(retainedSceneName);
-        if (retained.IsValid() && retained.isLoaded)
-            yield return SceneManager.UnloadSceneAsync(retained);
-
-        yield return UnloadUnusedSharedArt();
-        operationInProgress = false;
-        Debug.Log($"[L05RetainedCleanup] unloaded retained scene '{retainedSceneName}'; Level 4.5 remains loaded.", this);
-        DrainPendingAdvance();
     }
 
     public void NotifySuccessorCheckpointActivated(string sceneName, UnityEngine.Object source = null)
@@ -639,11 +605,6 @@ public class GameFlowController : MonoBehaviour
         // 第 4.5 关要靠保留上一关做追逐。实体入场已确认，调用方可完成封条，
         // 但这里不关闭门也不卸载前关。
         if (ShouldRetainPredecessor(FindRouteIndex(currentLevelScene)))
-            return true;
-
-        // L05_Checkpoint has already released the pursuit-only retained L4.
-        // The L5 entry seal confirms physical arrival but deliberately keeps L4.5.
-        if (currentLevelScene == "Level_05" && retainedPredecessorReleasedAtLevel05Checkpoint)
             return true;
 
         if (operationInProgress)
@@ -1330,8 +1291,9 @@ public class GameFlowController : MonoBehaviour
                 if (parkour != null && parkour.CurrentPhase != Level04BParkourController.Phase.Released &&
                     parkour.CurrentPhase != Level04BParkourController.Phase.Failed)
                 {
+                    parkour.StartDogFollowWhenReleased();
                     level045PlayerBindingRoutine = null;
-                    Debug.Log("[L045Pursuit] parkour owns dog movement; orbit binding skipped.", this);
+                    Debug.Log("[L045Pursuit] parkour owns dog movement; dog follow queued for release.", this);
                     yield break;
                 }
                 DogOrbitFollower follower = actors.Dog.GetComponent<DogOrbitFollower>();

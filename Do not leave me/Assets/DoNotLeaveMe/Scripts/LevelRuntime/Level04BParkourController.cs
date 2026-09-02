@@ -87,6 +87,7 @@ public sealed class Level04BParkourController : MonoBehaviour, ILevelTemporarySt
     private bool ownershipHeld;
     private bool cameraReleasedForWalkout;
     private bool dogOrbitWasFollowing;
+    private bool startDogFollowOnRelease;
     private float tutorialEndsAt;
 
     public Phase CurrentPhase => phase;
@@ -467,8 +468,28 @@ public sealed class Level04BParkourController : MonoBehaviour, ILevelTemporarySt
             else
                 cameraFollow.ReleaseScriptedControl();
         }
-        if (dogOrbitWasFollowing && dogOrbit != null && human != null && dog != null)
+        if ((dogOrbitWasFollowing || startDogFollowOnRelease) && human != null && dog != null)
+        {
+            if (dogOrbit == null)
+                dogOrbit = dog.GetComponent<DogOrbitFollower>();
+            if (dogOrbit == null)
+                dogOrbit = dog.gameObject.AddComponent<DogOrbitFollower>();
             dogOrbit.BeginOrbit(human, dog);
+        }
+
+        startDogFollowOnRelease = false;
+    }
+
+    public void StartDogFollowWhenReleased()
+    {
+        startDogFollowOnRelease = true;
+    }
+
+    public void ReleaseForLevelTransition()
+    {
+        dogOrbitWasFollowing = false;
+        startDogFollowOnRelease = false;
+        ReleaseOwnership();
     }
 
     void BindObstacles()
