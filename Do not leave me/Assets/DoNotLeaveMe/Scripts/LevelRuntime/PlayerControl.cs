@@ -19,6 +19,7 @@ public class PlayerControl : MonoBehaviour
     void Start()
     {
         activeActor = human;
+        ApplyPhysicsOwnership();
         cameraFollow = FindObjectOfType<CameraFollow>();
         if (cameraFollow == null)
         {
@@ -76,6 +77,7 @@ public class PlayerControl : MonoBehaviour
             activeActor.Stop();
 
         activeActor = next;
+        ApplyPhysicsOwnership();
         SetCameraTarget();
 
         if (ActiveRoleChanged != null)
@@ -206,6 +208,7 @@ public class PlayerControl : MonoBehaviour
             DogOrbitFollower follower = dog != null ? dog.GetComponent<DogOrbitFollower>() : null;
             if (follower != null)
                 follower.StopOrbit();
+            ApplyPhysicsOwnership();
             return;
         }
 
@@ -216,6 +219,7 @@ public class PlayerControl : MonoBehaviour
             activeActor.Stop();
 
         activeActor = human;
+        ApplyPhysicsOwnership();
         human.gameObject.SetActive(true);
         if (dog != null)
         {
@@ -233,6 +237,7 @@ public class PlayerControl : MonoBehaviour
         if (activeActor != null && activeActor != human)
             activeActor.Stop();
         activeActor = human;
+        ApplyPhysicsOwnership();
         if (human != null)
             human.Stop();
         if (dog != null)
@@ -246,7 +251,10 @@ public class PlayerControl : MonoBehaviour
     {
         parkourControlOwners = Mathf.Max(0, parkourControlOwners - 1);
         if (!IsParkourControlled && human != null)
+        {
             human.Stop();
+            ApplyPhysicsOwnership();
+        }
     }
 
     public void ForceReleaseParkourControl()
@@ -254,6 +262,16 @@ public class PlayerControl : MonoBehaviour
         parkourControlOwners = 0;
         if (human != null)
             human.Stop();
+        ApplyPhysicsOwnership();
+    }
+
+    void ApplyPhysicsOwnership()
+    {
+        bool scriptedPairControl = humanOnly || IsParkourControlled;
+        if (human != null)
+            human.SetPhysicsDriven(scriptedPairControl || activeActor == human);
+        if (dog != null)
+            dog.SetPhysicsDriven(scriptedPairControl || activeActor == dog);
     }
 
     static CooperativeRailMover FindEngagedRailMover()

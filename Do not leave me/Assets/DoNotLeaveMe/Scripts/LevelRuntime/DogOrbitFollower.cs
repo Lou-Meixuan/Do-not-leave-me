@@ -17,6 +17,8 @@ public class DogOrbitFollower : MonoBehaviour
     private float nextRepathTime;
     private float orbitAngle;
     private bool active;
+    private Vector3 moveTarget;
+    private bool hasMoveTarget;
 
     public bool IsFollowing => active && human != null && dog != null;
 
@@ -32,17 +34,25 @@ public class DogOrbitFollower : MonoBehaviour
         currentPath = null;
         waypointIndex = 0;
         nextRepathTime = 0f;
+        hasMoveTarget = false;
+        if (dog != null)
+            dog.SetRuntimeMovementSpeedMultiplier(followSpeedMultiplier);
     }
 
     public void StopOrbit()
     {
         if (dog != null)
+        {
             dog.SetExternalDogMovement(false);
+            dog.SetRuntimeMovementSpeedMultiplier(1f);
+            dog.Stop();
+        }
 
         active = false;
         human = null;
         dog = null;
         currentPath = null;
+        hasMoveTarget = false;
     }
 
     void Update()
@@ -61,7 +71,7 @@ public class DogOrbitFollower : MonoBehaviour
             seeker.StartPath(dog.transform.position, target, OnPathComplete);
         }
 
-        Vector3 moveTarget = target;
+        moveTarget = target;
         if (currentPath != null && !currentPath.error && currentPath.vectorPath != null && currentPath.vectorPath.Count > 0)
         {
             while (waypointIndex < currentPath.vectorPath.Count - 1 &&
@@ -72,17 +82,29 @@ public class DogOrbitFollower : MonoBehaviour
             moveTarget.y = dog.transform.position.y;
         }
 
-        Vector3 previousPosition = dog.transform.position;
-        dog.transform.position = Vector3.MoveTowards(
-            previousPosition,
-            moveTarget,
-            dog.ConfiguredWalkSpeed * Mathf.Max(0f, followSpeedMultiplier) * Time.deltaTime);
-        dog.SetExternalDogMovement(FlatDistance(previousPosition, dog.transform.position) > movementThreshold);
+        hasMoveTarget = true;
 
         Vector3 look = human.transform.position - dog.transform.position;
         look.y = 0f;
         if (look.sqrMagnitude > 0.01f)
             dog.transform.rotation = Quaternion.Slerp(dog.transform.rotation, Quaternion.LookRotation(look), 8f * Time.deltaTime);
+    }
+
+    void FixedUpdate()
+    {
+        if (!active || dog == null || !hasMoveTarget)
+            return;
+
+        Vector3 direction = moveTarget - dog.transform.position;
+        direction.y = 0f;
+        if (direction.sqrMagnitude <= movementThreshold * movementThreshold)
+        {
+            dog.Stop();
+            return;
+        }
+
+        // 通过刚体速度移动，让角色、墙体与场景碰撞都由 Unity 在物理步中解算。
+        dog.Move(direction.normalized, false);
     }
 
     void OnPathComplete(Path path)

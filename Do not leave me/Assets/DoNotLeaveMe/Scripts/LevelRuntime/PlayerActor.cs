@@ -57,6 +57,7 @@ public class PlayerActor : MonoBehaviour
     public float ConfiguredWalkSpeed => walkSpeed;
     public float RuntimeMovementSpeedMultiplier => runtimeMovementSpeedMultiplier;
     public bool IsGroundedForParkour => IsGrounded();
+    public bool IsPhysicsDriven => body != null && !body.isKinematic;
 
     /// <summary>相机注视点；未配置时回退到根节点。</summary>
     public Transform FocusAnchor => focusAnchor != null ? focusAnchor : transform;
@@ -101,7 +102,7 @@ public class PlayerActor : MonoBehaviour
 
         // 挂接吸附只接管 X/Z；Y 保持当前值且不清垂直速度，垂直交给重力与地面碰撞。
         // 若整只 SetPosition 硬传送，锚点高度和地面接触会每帧互相打架，角色就会弹来弹去。
-        Vector3 velocity = body.velocity;
+        Vector3 velocity = body.isKinematic ? Vector3.zero : body.velocity;
         target.y = transform.position.y;
         body.position = target;
         transform.SetPositionAndRotation(target, transform.rotation);
@@ -110,7 +111,8 @@ public class PlayerActor : MonoBehaviour
         // 挂点是水平位置约束：不能把挂接前残留的 X/Z 惯性带回去，
         // 否则刚体会在本物理步滑离挂点，再于下一帧被强制吸回而抖动。
         // Y 仍由重力和地面接触解算，避免角色被固定在空中或穿过地面。
-        body.velocity = new Vector3(0f, velocity.y, 0f);
+        if (!body.isKinematic)
+            body.velocity = new Vector3(0f, velocity.y, 0f);
         Physics.SyncTransforms();
     }
 
@@ -180,7 +182,7 @@ public class PlayerActor : MonoBehaviour
 
     public void Move(Vector3 direction, bool sprint)
     {
-        if (moverRotationLocked || IsExecutionLocked)
+        if (body == null || body.isKinematic || moverRotationLocked || IsExecutionLocked)
             return;
 
         bool hasMovementInput = direction.sqrMagnitude > 0.01f;
@@ -228,8 +230,42 @@ public class PlayerActor : MonoBehaviour
 
     public void Stop()
     {
+        if (body == null)
+            return;
+
+        if (body.isKinematic)
+        {
+            SetState(ActorState.Idle);
+            return;
+        }
+
         body.velocity = new Vector3(0f, body.velocity.y, 0f);
         SetState(IsGrounded() ? ActorState.Idle : ActorState.Jumping);
+    }
+
+    /// <summary>
+    /// 控制该角色是否由动力学刚体驱动。未受控制的角色保持实体碰撞，
+    /// 但设为 Kinematic 后不会被另一个角色撞得滑走。
+    /// </summary>
+    public void SetPhysicsDriven(bool driven)
+    {
+        if (body == null || driven == !body.isKinematic)
+            return;
+
+        if (!body.isKinematic)
+        {
+            body.velocity = Vector3.zero;
+            body.angularVelocity = Vector3.zero;
+        }
+
+        body.isKinematic = !driven;
+        body.useGravity = driven;
+        body.collisionDetectionMode = driven
+            ? CollisionDetectionMode.ContinuousDynamic
+            : CollisionDetectionMode.Discrete;
+
+        if (!driven)
+            SetState(ActorState.Idle);
     }
 
     /// <summary>
@@ -361,7 +397,7 @@ public class PlayerActor : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (!IsExecutionLocked)
+        if (!IsExecutionLocked || body == null || body.isKinematic)
             return;
 
         body.velocity = new Vector3(0f, body.velocity.y, 0f);
@@ -475,8 +511,11 @@ public class PlayerActor : MonoBehaviour
             body.rotation = moverRotation;
             transform.rotation = moverRotation;
         }
-        body.velocity = Vector3.zero;
-        body.angularVelocity = Vector3.zero;
+        if (!body.isKinematic)
+        {
+            body.velocity = Vector3.zero;
+            body.angularVelocity = Vector3.zero;
+        }
         lastFootstepPosition = position;
         Physics.SyncTransforms();
     }
