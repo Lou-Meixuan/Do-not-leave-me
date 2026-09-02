@@ -458,10 +458,12 @@ public class PushableCrate : MonoBehaviour, ILevelTemporaryState, IPushMover
     bool ProbeBlocked(Vector3 axis)
     {
         Vector3 half = Vector3.Scale(box.size * 0.5f, transform.lossyScale);
-        float distance = Mathf.Abs(Vector3.Dot(half, axis)) + blockProbeSkin;
-        Vector3 origin = transform.position + Vector3.up * 0.1f;
+        half = new Vector3(Mathf.Abs(half.x), Mathf.Abs(half.y), Mathf.Abs(half.z));
+        float distance = Mathf.Max(0f, movementSpeed) * Time.fixedDeltaTime
+            + Mathf.Max(0f, blockProbeSkin);
+        Vector3 origin = box.transform.TransformPoint(box.center);
         RaycastHit hit;
-        if (Physics.BoxCast(origin, Vector3.Scale(half, new Vector3(0.9f, 0.9f, 0.9f)), axis, out hit, transform.rotation, distance))
+        if (Physics.BoxCast(origin, Vector3.Scale(half, new Vector3(0.9f, 0.9f, 0.9f)), axis, out hit, box.transform.rotation, distance))
         {
             // IgnoreCollision 只影响接触解算，不影响 BoxCast；挂点角色就在运动方向上，
             // 拉动时必须把他们排除掉，否则永远误报 Blocked。

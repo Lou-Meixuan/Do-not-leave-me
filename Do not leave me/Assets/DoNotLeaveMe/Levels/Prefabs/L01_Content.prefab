@@ -409,7 +409,7 @@ MonoBehaviour:
   - {fileID: 7190247413901624210}
   - {fileID: 4241751565166989119}
   - {fileID: 935985286412814883}
-  blockProbeSkin: 0.12
+  blockProbeSkin: 0.03
   axisMode: 5
   playPushEvent:
     idInternal: 0
