@@ -84,6 +84,8 @@ MonoBehaviour:
   jumpHeight: 2.6
   walkOnlyAnimation: 0
   canJump: 1
+  dogStoppingDeceleration: 12
+  dogIdleSpeedThreshold: 0.05
   focusAnchor: {fileID: 7111000000000000002}
   moverAttachPoint: {fileID: 7111000000000000004}
   humanFootstepEvent:
@@ -310,10 +312,10 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.35
-  m_Height: 1.7
+  m_Radius: 0.4
+  m_Height: 3.3
   m_Direction: 1
-  m_Center: {x: 0, y: 0.85, z: 0}
+  m_Center: {x: 0, y: 1.65, z: 0}
 --- !u!1 &7112000000000000003
 GameObject:
   m_ObjectHideFlags: 0
@@ -383,7 +385,7 @@ GameObject:
   - component: {fileID: 2959310322722101401}
   - component: {fileID: 1782578789361906537}
   m_Layer: 0
-  m_Name: FormalPlayerActors
+  m_Name: PlayerActors
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -537,6 +539,8 @@ MonoBehaviour:
   jumpHeight: 1.8
   walkOnlyAnimation: 1
   canJump: 0
+  dogStoppingDeceleration: 12
+  dogIdleSpeedThreshold: 0.05
   focusAnchor: {fileID: 7111000000000000006}
   moverAttachPoint: {fileID: 7111000000000000008}
   humanFootstepEvent:
