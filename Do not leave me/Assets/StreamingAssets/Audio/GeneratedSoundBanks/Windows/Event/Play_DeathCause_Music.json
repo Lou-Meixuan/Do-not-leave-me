@@ -1,0 +1,119 @@
+{
+ "SoundBanksInfo": {
+  "Platform": "Windows",
+  "BasePlatform": "Windows",
+  "SchemaVersion": "16",
+  "SoundBankVersion": "172",
+  "SoundBanks": [
+   {
+    "Id": "2229278265",
+    "Type": "Event",
+    "GUID": "{CEA6B069-0917-45AF-B1E6-5878BCDDA0F1}",
+    "Language": "SFX",
+    "Hash": "{F905DFD9-1B60-6363-F440-E5587526ECE4}",
+    "ObjectPath": "Play_DeathCause_Music",
+    "ShortName": "Play_DeathCause_Music",
+    "Path": "Event/Play_DeathCause_Music.bnk",
+    "Media": [
+     {
+      "Id": "403915748",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Loose",
+      "ShortName": "COD_AnxietyOverload.wav",
+      "Path": "Media/403915748.wem",
+      "CachePath": "4D/{4DEE5C90-981C-52C7-187B-92006B88DAD4}.wem"
+     },
+     {
+      "Id": "1063668187",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Loose",
+      "ShortName": "COD_EliminatedbyDoc.wav",
+      "Path": "Media/1063668187.wem",
+      "CachePath": "74/{7439C31B-7347-5A24-94A3-EB72CB43C74E}.wem"
+     }
+    ],
+    "Events": [
+     {
+      "Id": "2229278265",
+      "Name": "Play_DeathCause_Music",
+      "ObjectPath": "\\Events\\Default Work Unit\\Music\\Play_DeathCause_Music",
+      "GUID": "{CEA6B069-0917-45AF-B1E6-5878BCDDA0F1}",
+      "DurationType": "Infinite",
+      "SwitchContainers": [
+       {
+        "SwitchValue": {
+         "GroupType": "State",
+         "GroupId": "1083682085",
+         "Id": "4143496951",
+         "GUID": "{D1EB2FDB-3656-4570-8514-FD9E87CEAFCA}"
+        },
+        "MediaRefs": [
+         {
+          "Id": "403915748"
+         }
+        ]
+       },
+       {
+        "SwitchValue": {
+         "GroupType": "State",
+         "GroupId": "1083682085",
+         "Id": "1342227465",
+         "GUID": "{8BEBCA5E-38A4-47FF-916C-6C208FAE7631}"
+        },
+        "MediaRefs": [
+         {
+          "Id": "1063668187"
+         }
+        ]
+       },
+       {
+        "SwitchValue": {
+         "GroupType": "State",
+         "GroupId": "1083682085",
+         "Id": "748895195",
+         "GUID": "{95FAD3F6-7D49-4837-B0A0-880362D2DEA3}"
+        },
+        "MediaRefs": [
+         {
+          "Id": "403915748"
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    "StateGroups": [
+     {
+      "Id": "1083682085",
+      "Name": "COD",
+      "ObjectPath": "\\States\\Default Work Unit\\COD",
+      "GUID": "{B5D1F04D-C539-4D61-A6FA-E3AE6FD86226}",
+      "States": [
+       {
+        "Id": "748895195",
+        "Name": "None",
+        "ObjectPath": "\\States\\Default Work Unit\\COD\\None",
+        "GUID": "{95FAD3F6-7D49-4837-B0A0-880362D2DEA3}"
+       },
+       {
+        "Id": "1342227465",
+        "Name": "Eliminated",
+        "ObjectPath": "\\States\\Default Work Unit\\COD\\Eliminated",
+        "GUID": "{8BEBCA5E-38A4-47FF-916C-6C208FAE7631}"
+       },
+       {
+        "Id": "4143496951",
+        "Name": "Anxiety",
+        "ObjectPath": "\\States\\Default Work Unit\\COD\\Anxiety",
+        "GUID": "{D1EB2FDB-3656-4570-8514-FD9E87CEAFCA}"
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "FileHash": "{1520F277-D30D-189A-47D8-6382803ED559}"
+ }
+}

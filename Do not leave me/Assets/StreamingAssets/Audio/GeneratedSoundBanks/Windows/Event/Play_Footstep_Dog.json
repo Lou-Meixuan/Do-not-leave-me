@@ -1,0 +1,133 @@
+{
+ "SoundBanksInfo": {
+  "Platform": "Windows",
+  "BasePlatform": "Windows",
+  "SchemaVersion": "16",
+  "SoundBankVersion": "172",
+  "SoundBanks": [
+   {
+    "Id": "1441942263",
+    "Type": "Event",
+    "GUID": "{29D16795-FCA5-4320-803D-171D23439F81}",
+    "Language": "SFX",
+    "Hash": "{3ECCB3D1-EEA3-F996-1755-F6CA3F852B52}",
+    "ObjectPath": "Play_Footstep_Dog",
+    "ShortName": "Play_Footstep_Dog",
+    "Path": "Event/Play_Footstep_Dog.bnk",
+    "Media": [
+     {
+      "Id": "32748372",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Loose",
+      "ShortName": "Dog_Footstep_Claws_WaxedTile_05.wav",
+      "Path": "Media/32748372.wem",
+      "CachePath": "04/{046AE191-005D-C0A9-2074-EE24BBBCBA83}.wem"
+     },
+     {
+      "Id": "110153795",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Loose",
+      "ShortName": "Dog_Footstep_Claws_WaxedTile_06.wav",
+      "Path": "Media/110153795.wem",
+      "CachePath": "B2/{B26D82C5-7B3C-7186-9AA3-FA94CA01EA0E}.wem"
+     },
+     {
+      "Id": "197363669",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Loose",
+      "ShortName": "Dog_Footstep_Claws_WaxedTile_07.wav",
+      "Path": "Media/197363669.wem",
+      "CachePath": "64/{64F73885-A078-C02A-5B76-0722E63F8122}.wem"
+     },
+     {
+      "Id": "567692178",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Loose",
+      "ShortName": "Dog_Footstep_Claws_WaxedTile_01.wav",
+      "Path": "Media/567692178.wem",
+      "CachePath": "04/{048E327A-67F8-40B3-E15E-B6064FD48107}.wem"
+     },
+     {
+      "Id": "847050743",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Loose",
+      "ShortName": "Dog_Footstep_Claws_WaxedTile_08.wav",
+      "Path": "Media/847050743.wem",
+      "CachePath": "49/{495AAE56-59E9-4A36-1D16-DD7BBAF29B22}.wem"
+     },
+     {
+      "Id": "876988467",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Loose",
+      "ShortName": "Dog_Footstep_Claws_WaxedTile_03.wav",
+      "Path": "Media/876988467.wem",
+      "CachePath": "AB/{AB79C9AC-DD3F-608C-652F-7B58BEBC2A01}.wem"
+     },
+     {
+      "Id": "1048473368",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Loose",
+      "ShortName": "Dog_Footstep_Claws_WaxedTile_02.wav",
+      "Path": "Media/1048473368.wem",
+      "CachePath": "F2/{F2E61634-2C7A-6B87-D15B-24E254CBB2B5}.wem"
+     },
+     {
+      "Id": "1061112106",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Loose",
+      "ShortName": "Dog_Footstep_Claws_WaxedTile_04.wav",
+      "Path": "Media/1061112106.wem",
+      "CachePath": "25/{25003923-3053-1B26-329E-FE7EE8687E38}.wem"
+     }
+    ],
+    "Events": [
+     {
+      "Id": "1441942263",
+      "Name": "Play_Footstep_Dog",
+      "ObjectPath": "\\Events\\Default Work Unit\\SFX\\Player\\Play_Footstep_Dog",
+      "GUID": "{29D16795-FCA5-4320-803D-171D23439F81}",
+      "MaxAttenuation": "30",
+      "DurationType": "OneShot",
+      "DurationMin": "0.23446304",
+      "DurationMax": "0.24840495",
+      "MediaRefs": [
+       {
+        "Id": "32748372"
+       },
+       {
+        "Id": "110153795"
+       },
+       {
+        "Id": "197363669"
+       },
+       {
+        "Id": "567692178"
+       },
+       {
+        "Id": "847050743"
+       },
+       {
+        "Id": "876988467"
+       },
+       {
+        "Id": "1048473368"
+       },
+       {
+        "Id": "1061112106"
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "FileHash": "{6BFC6679-767A-A9C5-1A4C-9A244A3009A7}"
+ }
+}

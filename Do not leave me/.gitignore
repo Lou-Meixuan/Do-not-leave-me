@@ -99,15 +99,14 @@ screenshots/
 # 这批 .bnk 一旦不入库，没装 Wwise 的成员拉下代码就完全没有声音。
 # 现状：Mac 和 Windows 两个平台各 129 个文件（共 30MB）都在库里，是完整的。
 # 改音频的流程：装 Wwise 的那位生成 bank 后连同 .bnk 一起提交。
-# 派生副本 Assets/StreamingAssets/Audio/ 仍然忽略 —— 它由
-# CopySoundBanksAsPreBuildStep 从上面这份自动拷出来，不需要入库。
+# 派生副本 Assets/StreamingAssets/Audio/ 现在也入库 —— CopySoundBanks 只在 Build
+# 播放器时才跑，进 Play 模式不会触发，所以新 clone 的人在编辑器里没声音。
+# 2026-08-30: 项目文件夹改名后被 ignore 的那份没跟着走，全队静音，故改为入库。
 /[Uu]nityProject_WwiseProject/.cache/
 /[Uu]nityProject_WwiseProject/*.wsettings
 /[Uu]nityProject_WwiseProject/*.validationcache
 /[Uu]nityProject_WwiseProject/*.wproj.autosave
 /[Uu]nityProject_WwiseProject/[Bb]ackup/
-/[Aa]ssets/[Ss]treamingAssets/[Aa]udio/
-/[Aa]ssets/[Ss]treamingAssets/[Aa]udio.meta
 
 # Wwise 安装包（20MB，装完就没用了）
 WwiseUnityIntegration_*_Src.zip
