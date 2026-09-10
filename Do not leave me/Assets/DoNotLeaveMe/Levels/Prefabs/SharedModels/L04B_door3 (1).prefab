@@ -11,8 +11,9 @@ GameObject:
   - component: {fileID: 2609775759892492103}
   - component: {fileID: 1110608604475879421}
   - component: {fileID: 2315579791861297113}
+  - component: {fileID: 1509697123033352534}
   m_Layer: 0
-  m_Name: L045_Content_door3 (1)_353bc00b_7158796146257112550
+  m_Name: L04B_door3 (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -83,3 +84,24 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!65 &1509697123033352534
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3110436225758603388}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.005620167, y: 0.0008272, z: 0.010000403}
+  m_Center: {x: 0.000004590256, y: 0.0000059883473, z: 0.0000002002344}
