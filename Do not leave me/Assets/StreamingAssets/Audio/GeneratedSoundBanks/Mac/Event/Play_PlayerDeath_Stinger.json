@@ -1,0 +1,48 @@
+{
+ "SoundBanksInfo": {
+  "Platform": "Mac",
+  "BasePlatform": "Mac",
+  "SchemaVersion": "16",
+  "SoundBankVersion": "172",
+  "SoundBanks": [
+   {
+    "Id": "2509310786",
+    "Type": "Event",
+    "GUID": "{292DC424-9092-4CD3-BC79-68F18EF97CFB}",
+    "Language": "SFX",
+    "Hash": "{9E98CCEF-0C96-B008-DB65-408EE5B698B8}",
+    "ObjectPath": "Play_PlayerDeath_Stinger",
+    "ShortName": "Play_PlayerDeath_Stinger",
+    "Path": "Event/Play_PlayerDeath_Stinger.bnk",
+    "Media": [
+     {
+      "Id": "86932433",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Loose",
+      "ShortName": "SFX_PlayerDeath_Stinger.wav",
+      "Path": "Media/86932433.wem",
+      "CachePath": "50/{50299A20-464E-0A0E-3CF0-FBD2B431B219}.wem"
+     }
+    ],
+    "Events": [
+     {
+      "Id": "2509310786",
+      "Name": "Play_PlayerDeath_Stinger",
+      "ObjectPath": "\\Events\\Default Work Unit\\SFX\\Game\\Play_PlayerDeath_Stinger",
+      "GUID": "{292DC424-9092-4CD3-BC79-68F18EF97CFB}",
+      "DurationType": "OneShot",
+      "DurationMin": "6.1259584",
+      "DurationMax": "6.1259584",
+      "MediaRefs": [
+       {
+        "Id": "86932433"
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "FileHash": "{67FF967E-372E-FC64-FC85-52BE3DB076AE}"
+ }
+}
