@@ -46,7 +46,9 @@ public class PlayerActor : MonoBehaviour
     private float nextIdleVariationTime;
     private bool idleVariation;
     private bool moverAttachPointResolved;
-    private Vector3 lastFootstepPosition;
+    private FootstepDistanceTracker footstepTracker;
+    private float audioAirborneTime;
+    private float audioGraceUntil;
     private bool hasWarnedMissingFootstepEvent;
     private int executionLockCount;
     private float runtimeMovementSpeedMultiplier = 1f;
@@ -124,7 +126,8 @@ public class PlayerActor : MonoBehaviour
         body.constraints = RigidbodyConstraints.FreezeRotation;
         body.interpolation = RigidbodyInterpolation.Interpolate;
         body.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
-        lastFootstepPosition = transform.position;
+        footstepTracker.Reset(transform.position);
+        audioGraceUntil = Time.time + 0.5f;
     }
 
     void Update()
@@ -153,21 +156,29 @@ public class PlayerActor : MonoBehaviour
 
     void HandleFootsteps()
     {
-        if (!IsGrounded())
-            return;
-
-        Vector3 current = transform.position;
-        Vector3 previous = lastFootstepPosition;
-        current.y = 0f;
-        previous.y = 0f;
+        bool grounded = IsGrounded();
+        bool audible = GameplayState.CanSimulate && !IsExecutionLocked;
         bool isHuman = role == ActorRole.Human;
+        if (!audible || Time.time < audioGraceUntil) audioAirborneTime = 0;
+        else if (!grounded) audioAirborneTime += Time.deltaTime;
+        else if (audioAirborneTime > 0)
+        {
+            if (isHuman && audioAirborneTime > 0.15f)
+                FormalSfxEvents.Post("Play_Human_Land", gameObject);
+            audioAirborneTime = 0;
+            footstepTracker.Reset(transform.position);
+        }
         float requiredDistance = isHuman
             ? state == ActorState.Sprinting ? sprintFootstepDistance : walkFootstepDistance
             : dogWalkFootstepDistance;
-        if ((current - previous).sqrMagnitude < requiredDistance * requiredDistance)
+        if (!footstepTracker.Tick(transform.position, requiredDistance, grounded && audible, Time.deltaTime))
             return;
 
-        lastFootstepPosition = transform.position;
+        if (isHuman && FormalAudioSurface.IsCeramic(transform.position))
+        {
+            FormalSfxEvents.Post("Play_Human_Tile", gameObject);
+            return;
+        }
         AK.Wwise.Event footstepEvent = isHuman ? humanFootstepEvent : dogFootstepEvent;
         if (footstepEvent != null && footstepEvent.IsValid())
         {
@@ -516,7 +527,9 @@ public class PlayerActor : MonoBehaviour
             body.velocity = Vector3.zero;
             body.angularVelocity = Vector3.zero;
         }
-        lastFootstepPosition = position;
+        footstepTracker.Reset(position);
+        audioAirborneTime = 0;
+        audioGraceUntil = Time.time + 0.5f;
         Physics.SyncTransforms();
     }
 }

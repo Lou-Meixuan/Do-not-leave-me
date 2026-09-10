@@ -176,6 +176,7 @@ public class DoorInteraction : MonoBehaviour, ILevelTemporaryState
 
         if (!PrerequisitesComplete)
         {
+            PostDoorEvent(lockedEvent, ResolveAudioEmitter(), false);
             ShowHint(promptPrerequisite);
             return;
         }
@@ -240,8 +241,12 @@ public class DoorInteraction : MonoBehaviour, ILevelTemporaryState
         }
     }
 
+    private float nextDoorAudioTime;
+
     void PostDoorEvent(AK.Wwise.Event doorEvent, GameObject emitter, bool unlocking)
     {
+        if (Time.unscaledTime < nextDoorAudioTime) return;
+        nextDoorAudioTime = Time.unscaledTime + 0.25f;
         if (doorEvent != null && doorEvent.IsValid())
         {
             doorEvent.Post(emitter);
@@ -265,18 +270,8 @@ public class DoorInteraction : MonoBehaviour, ILevelTemporaryState
 
     GameObject ResolveAudioEmitter()
     {
-        foreach (Object occupant in occupants)
-        {
-            Component component = occupant as Component;
-            if (component != null)
-                return component.gameObject;
-
-            GameObject occupantObject = occupant as GameObject;
-            if (occupantObject != null)
-                return occupantObject;
-        }
-
-        return gameObject;
+        Door target = ResolvedDoor;
+        return target != null ? target.gameObject : gameObject;
     }
 
     void RefreshPrompt()
