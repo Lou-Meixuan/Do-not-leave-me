@@ -1,0 +1,61 @@
+# ============================================================
+# 统一换行符规则：仓库内一律存 LF，避免 Windows 编辑器把整个文件
+# 改成 CRLF 后 git status 出现成百上千个「假改动」。
+# 新增后需执行一次： git add --renormalize .
+# ============================================================
+
+* text=auto eol=lf
+
+# ---- Windows 原生工具要求 CRLF 的文件 ----
+*.bat  text eol=crlf
+*.cmd  text eol=crlf
+*.ps1  text eol=crlf
+*.sln  text eol=crlf
+
+# ---- Unity 文本资产（YAML），保持 LF ----
+*.cs      text eol=lf diff=csharp
+*.shader  text eol=lf
+*.cginc   text eol=lf
+*.hlsl    text eol=lf
+*.unity   text eol=lf
+*.prefab  text eol=lf
+*.asset   text eol=lf
+*.mat     text eol=lf
+*.anim    text eol=lf
+*.controller text eol=lf
+*.meta    text eol=lf
+*.json    text eol=lf
+*.md      text eol=lf
+*.yml     text eol=lf
+*.yaml    text eol=lf
+
+# ---- 二进制：禁止任何转换与文本 diff ----
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.psd  binary
+*.tga  binary
+*.tif  binary
+*.exr  binary
+*.ico  binary
+*.fbx  binary
+*.obj  binary
+*.blend binary
+*.wav  binary
+*.mp3  binary
+*.ogg  binary
+*.aif  binary
+*.bnk  binary
+*.wem  binary
+*.mp4  binary
+*.mov  binary
+*.ttf  binary
+*.otf  binary
+*.dll  binary
+*.so   binary
+*.dylib binary
+*.pdb  binary
+*.zip  binary
+*.7z   binary
+*.unitypackage binary

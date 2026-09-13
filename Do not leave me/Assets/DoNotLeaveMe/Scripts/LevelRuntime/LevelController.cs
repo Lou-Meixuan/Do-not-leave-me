@@ -148,6 +148,19 @@ public class LevelController : MonoBehaviour
             return false;
         }
 
+        // 4A's chase owns its spawn poses. Its general dog respawn anchor is
+        // behind the corridor edge, so ordinary ground probing can refuse the
+        // entire pair and leave the dog in the previous scene.
+        if (!hasCheckpoint && gameObject.scene.name == "Level_04A")
+        {
+            foreach (GameObject root in gameObject.scene.GetRootGameObjects())
+            {
+                Level04BParkourController parkour = root.GetComponentInChildren<Level04BParkourController>();
+                if (parkour != null && parkour.isActiveAndEnabled)
+                    return parkour.PlaceActorsAtRouteStart(actors.Human, actors.Dog);
+            }
+        }
+
         if (!TryResolveGroundPosition(humanAnchor, actors.Human, out Vector3 humanPosition) ||
             !TryResolveGroundPosition(dogAnchor, actors.Dog, out Vector3 dogPosition))
             return false;

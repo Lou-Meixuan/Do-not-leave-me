@@ -1,0 +1,1 @@
+return string.Join("; ", System.Linq.Enumerable.Range(0, UnityEngine.SceneManagement.SceneManager.sceneCount).Select(i => { var s = UnityEngine.SceneManagement.SceneManager.GetSceneAt(i); return s.path + " dirty=" + s.isDirty; }));

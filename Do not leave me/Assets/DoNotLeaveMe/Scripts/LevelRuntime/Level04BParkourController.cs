@@ -140,7 +140,7 @@ public sealed class Level04BParkourController : MonoBehaviour, ILevelTemporarySt
     public void BeginParkour()
     {
         ResolveDependencies();
-        if (human == null || playerControl == null || segments == null || segments.Length == 0 || !SegmentIsValid(segments[0]))
+        if (playerControl == null || !PlaceActorsAtRouteStart(human, dog))
         {
             Debug.LogError("[Level04BParkour] Cannot begin: actors, control, or route is incomplete.", this);
             return;
@@ -157,8 +157,6 @@ public sealed class Level04BParkourController : MonoBehaviour, ILevelTemporarySt
         nextBarkTime = 0f;
         phase = Phase.Chase;
 
-        RouteSegment first = segments[0];
-        human.SetPositionAndRotation(first.start.position, Quaternion.LookRotation(first.Forward, Vector3.up));
         if (dogRunner != null)
         {
             dogRunner.Bind(dog);
@@ -166,6 +164,23 @@ public sealed class Level04BParkourController : MonoBehaviour, ILevelTemporarySt
         }
         BindObstacles();
         UpdateCameraPose(true);
+    }
+
+    public bool PlaceActorsAtRouteStart(PlayerActor humanActor, PlayerActor dogActor)
+    {
+        if (humanActor == null || dogActor == null || segments == null ||
+            segments.Length == 0 || !SegmentIsValid(segments[0]))
+            return false;
+        if (dogRunner == null)
+            dogRunner = GetComponent<Level04BParkourDogRunner>();
+        if (dogRunner == null || !dogRunner.TryGetChaseStart(out Vector3 dogStart, out Quaternion dogRotation))
+            return false;
+
+        RouteSegment first = segments[0];
+        humanActor.SetPositionAndRotation(first.start.position + Vector3.up * humanActor.ParkourGroundClearance,
+            Quaternion.LookRotation(first.Forward, Vector3.up));
+        dogActor.SetPositionAndRotation(dogStart + Vector3.up * dogActor.ParkourGroundClearance, dogRotation);
+        return true;
     }
 
     void TickChase(float deltaTime)

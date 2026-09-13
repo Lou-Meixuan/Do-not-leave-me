@@ -118,6 +118,16 @@ public class GameFlowController : MonoBehaviour
     {
         cheatPanelVisible = enableCheatPanel && showCheatPanelOnStart;
 
+        // Unregistered art copies must not prevent the original parkour level
+        // from starting. Resolve in memory without changing the saved scene.
+        if (!string.IsNullOrEmpty(initialLevelScene) &&
+            initialLevelScene.StartsWith("Level_04A ", StringComparison.Ordinal) &&
+            FindRouteEntryByScene(initialLevelScene) == null &&
+            FindRouteEntryByScene("Level_04A") != null)
+        {
+            initialLevelScene = "Level_04A";
+        }
+
         if (!string.IsNullOrEmpty(initialLevelScene))
             LoadLevelAsync(initialLevelScene, null);
     }
