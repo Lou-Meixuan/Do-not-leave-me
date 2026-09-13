@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 7348537208952621661}
   - component: {fileID: 5001267026550730280}
   m_Layer: 7
-  m_Name: L01_Content_hospital bed (1)_4f08e5e9_8462417918075336456
+  m_Name: L01_hospital bed (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
