@@ -166,7 +166,6 @@ Anxiety implementation: while separated, the bar fills in roughly 10 seconds. Pa
 
 ## Development Conventions
 
-- **Two Git repositories.** The real one is the **repository root** `Do-not-leave-me/` (it has `origin`). `Do not leave me/.git` is a remote-less duplicate left over from the 2026-08-30 cleanup. Run `git rev-parse --show-toplevel` before committing — commits to the inner repository publish nothing.
 - **Unity assets.** Always move, add, and delete `.meta` files alongside their assets. Avoid unrelated scene or asset reserialization. Close the Unity Editor before moving or archiving assets from a shell.
 - **Renaming.** References use GUIDs, but these work by name: scene paths in `EditorBuildSettings.asset`, scene-name strings serialized inside scenes, C# string constants (`SceneManager.LoadScene`, `Resources.Load`, lookups by object name), and paths under `Resources/`. Read section 5 of `00-目录结构.md` before renaming anything.
 - **Archive, don't delete.** Retired content moves to `_ArchivedAssets/`.
