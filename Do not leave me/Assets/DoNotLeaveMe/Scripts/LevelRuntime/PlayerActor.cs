@@ -71,6 +71,18 @@ public class PlayerActor : MonoBehaviour
     /// </summary>
     public Vector3 MoverAttachOffset => moverAttachPoint != null ? moverAttachPoint.localPosition : Vector3.zero;
 
+    public float ParkourGroundClearance
+    {
+        get
+        {
+            float bottom = transform.position.y;
+            foreach (Collider collider in GetComponentsInChildren<Collider>())
+                if (collider.enabled && !collider.isTrigger && collider.attachedRigidbody == body)
+                    bottom = Mathf.Min(bottom, collider.bounds.min.y);
+            return transform.position.y - bottom + 0.02f;
+        }
+    }
+
     /// <summary>
     /// 把挂接锚点对齐到世界坐标：优先用 Inspector 指定或名为 MoverAttachPoint 的子节点，
     /// 都不存在时退化为根节点直接落在点位。锚点引用只在首次调用时解析一次，不会每帧查找。
@@ -305,9 +317,9 @@ public class PlayerActor : MonoBehaviour
             return;
 
         Vector3 target = worldPosition;
-        target.y = body.position.y;
-        Vector3 velocity = body.velocity;
-        body.velocity = new Vector3(0f, ClampFall(velocity.y), 0f);
+        // Unlike the jumping human, the scripted dog is driven by the route's
+        // complete pose. Gravity must not accumulate below a corridor seam.
+        body.velocity = Vector3.zero;
         body.MovePosition(target);
         body.MoveRotation(worldRotation);
         if (role == ActorRole.Dog)

@@ -14,17 +14,30 @@ public sealed class Level04BParkourDogRunner : MonoBehaviour
     private Transform[] activePath;
     private int waypointIndex;
     private bool running;
+    private float groundClearance;
 
     public bool IsComplete => activePath == null || waypointIndex >= activePath.Length;
 
     public void Bind(PlayerActor dogActor)
     {
         dog = dogActor;
+        groundClearance = dog != null ? dog.ParkourGroundClearance : 0f;
     }
 
     public void BeginChase()
     {
         BeginPath(chasePath, true);
+    }
+
+    public bool TryGetChaseStart(out Vector3 position, out Quaternion rotation)
+    {
+        position = default;
+        rotation = Quaternion.identity;
+        if (chasePath == null || chasePath.Length == 0 || chasePath[0] == null)
+            return false;
+        position = chasePath[0].position;
+        rotation = chasePath[0].rotation;
+        return true;
     }
 
     public void BeginBranch(bool left)
@@ -51,9 +64,12 @@ public sealed class Level04BParkourDogRunner : MonoBehaviour
 
         Vector3 current = dog.transform.position;
         Vector3 target = waypoint.position;
-        target.y = current.y;
+        target.y += groundClearance;
         float speed = running ? runSpeed : walkSpeed;
         Vector3 next = Vector3.MoveTowards(current, target, speed * deltaTime);
+        // The dog follows a scripted, non-jumping route. Keep its authored
+        // height across corridor seams instead of carrying a fall forever.
+        next.y = target.y;
         Vector3 direction = target - current;
         direction.y = 0f;
         Quaternion rotation = direction.sqrMagnitude > 0.001f
