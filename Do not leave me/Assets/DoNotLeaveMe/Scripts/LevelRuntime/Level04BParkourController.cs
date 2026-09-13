@@ -41,6 +41,11 @@ public sealed class Level04BParkourController : MonoBehaviour, ILevelTemporarySt
     [SerializeField] private Transform mergeAnchor;
     [SerializeField] private Transform[] walkoutPath = new Transform[0];
     [SerializeField] private bool beginOnStart = true;
+    [Tooltip("勾上之后跑酷不会在场景一加载就开始，而是等本关真正成为「当前关」之后才开跑。\n" +
+             "配合实体过门使用（上一关的出口踏板勾 Preload Route Successor + 本关入口放 LevelEntrySeal）：\n" +
+             "门开了先把本关加载出来让玩家看见，人和狗真的走进入口区、到达确认通过之后才开始跑。\n" +
+             "不勾 = 老行为，场景一加载就把人狗抓到跑酷起点开跑。")]
+    [SerializeField] private bool waitUntilLevelIsCurrent;
     [SerializeField, Min(0.05f)] private float laneChangeSeconds = 0.22f;
     [SerializeField, Min(0.1f)] private float branchSpeed = 7f;
     [SerializeField, Min(0.1f)] private float walkSpeed = 3.2f;
@@ -417,6 +422,17 @@ public sealed class Level04BParkourController : MonoBehaviour, ILevelTemporarySt
 
     IEnumerator BeginWhenReady()
     {
+        // 实体过门时本关会先被预加载，这期间玩家还站在上一关的地板上，
+        // 这时候开跑就会把人狗凭空抓到跑酷起点。等到到达确认通过、本关
+        // 成为当前关之后再开始。这段等待没有时限，玩家想在门口站多久都行。
+        if (waitUntilLevelIsCurrent)
+        {
+            GameFlowController flow = FindObjectOfType<GameFlowController>();
+            // 单独打开本场景调试时没有流程控制器，那就别等了，照常开始。
+            while (flow != null && flow.CurrentLevelScene != gameObject.scene.name)
+                yield return null;
+        }
+
         float deadline = Time.realtimeSinceStartup + 10f;
         while (Time.realtimeSinceStartup < deadline)
         {

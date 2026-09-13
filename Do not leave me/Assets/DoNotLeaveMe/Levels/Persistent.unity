@@ -1713,7 +1713,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 58e9393a17fd2584faea47c9e908efec, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  initialLevelScene: Level_04A 3
+  initialLevelScene: Level_04
   routeCatalog:
   - levelId: Level01
     sceneName: Level_01
@@ -1736,12 +1736,14 @@ MonoBehaviour:
     sceneName: Level_04
     sharedArtScenes:
     - SharedArt_L03_L04
-    - SharedArt_L04_L04B
+    - SharedArt_L04_L04A
     arrivalTransitionDoorName: ToLevel04
   - levelId: Level04A
     sceneName: Level_04A
-    sharedArtScenes: []
-    arrivalTransitionDoorName: ToLevel045
+    sharedArtScenes:
+    - SharedArt_L04_L04A
+    - SharedArt_L04_L04B
+    arrivalTransitionDoorName: ToLevel04A
   - levelId: Level04.5
     sceneName: Level_04B
     sharedArtScenes:
