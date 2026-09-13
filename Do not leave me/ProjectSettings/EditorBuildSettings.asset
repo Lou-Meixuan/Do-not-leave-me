@@ -45,8 +45,11 @@ EditorBuildSettings:
     path: Assets/DoNotLeaveMe/Levels/SharedArt_L03_L04.unity
     guid: 560b1010c52e46f44a77c0487522b6fc
   - enabled: 1
-    path: Assets/DoNotLeaveMe/Levels/SharedArt_L04_L04B.unity
+    path: Assets/DoNotLeaveMe/Levels/SharedArt_L04_L04A.unity
     guid: 32489c6427aebc54aa81c86b3eb6fddb
+  - enabled: 1
+    path: Assets/DoNotLeaveMe/Levels/SharedArt_L04_L04B.unity
+    guid: 537fd6f7e2c04b15baef793c674cdf93
   - enabled: 1
     path: Assets/DoNotLeaveMe/Levels/SharedArt_L04B_L05.unity
     guid: f6119da90766c1441be29c56fe0e65e3
